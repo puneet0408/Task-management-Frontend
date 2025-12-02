@@ -11,7 +11,7 @@ export default function Layout() {
       
       <div
         style={{
-          marginLeft: 150,
+          marginLeft: 190,
           marginTop: 70,
           padding: 20
         }}

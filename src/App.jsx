@@ -1,8 +1,9 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
+import "./App.scss";
 import Layout from "./Layout/Layout";
 import ProtectedRoute from "./Components/ProtectedRoute";
+import { Toaster } from "react-hot-toast";
 
 import Dashboard from "./Pages/Dashboard/dashboard";
 import Login from "./Pages/Login/Login";
@@ -23,6 +24,7 @@ export default function App() {
   const role = userData.role;
   return (
     <BrowserRouter>
+    <Toaster position="top-right" reverseOrder={false} />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
