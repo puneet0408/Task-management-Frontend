@@ -4,14 +4,14 @@ import "./App.scss";
 import Layout from "./Layout/Layout";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
-
+import Company from "./Pages/Company/Company";
 import Dashboard from "./Pages/Dashboard/dashboard";
 import Login from "./Pages/Login/Login";
 
 import menuConfig from "./Navigation/menuConfig";
 const routeComponentMap = {
   "/dashboard": <Dashboard />,
-  "/company": <div>Company</div>,
+  "/company": <Company/>,
   "/users": <div>Users</div>,
   "/projects": <div>Projects</div>,
   "/tasks": <div>Tasks</div>,

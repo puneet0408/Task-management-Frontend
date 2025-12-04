@@ -31,5 +31,16 @@ export default class AuthService {
     return axios.get(apiConfig.getProfile, { withCredentials: true });
   }
 
+getCompany(params = {}) {
+  console.log("API Called with:", params);
+  return axios.get(apiConfig.curdCompanyEndpoint, {
+    params,
+    withCredentials: true,
+  });
+}
+
+      PostCompany(data) {
+    return axios.post(apiConfig.curdCompanyEndpoint,data, { withCredentials: true });
+  }
 }
 
