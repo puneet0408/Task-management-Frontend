@@ -9,7 +9,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
-  --primary:#7367f0;
+  --primary: #7367f0;
   --black: #04152d;
   --black2: #041226;
   --black3: #020c1b;
@@ -26,51 +26,51 @@
   box-sizing: border-box;
 }
 
-.error{
+.error {
   color: red;
 }
 
 ::-webkit-scrollbar {
   display: none;
 }
-  .action-btn {
-    width: 32px;
-    height: 32px;
-    border: none;
-    outline: none;
-    border-radius: 6px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 18px; 
-    cursor: pointer;
-    background: #f3f4f6; 
-    color: #374151; 
-    transition: 0.2s ease;
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  outline: none;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #374151;
+  transition: 0.2s ease;
 
-    &:hover {
-      background: #e5e7eb;
-      transform: translateY(-1px);
-    }
+  &:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
   }
+}
 
-  .edit-btn {
-    color: #2563eb;
+.edit-btn {
+  color: #2563eb;
 
-    &:hover {
-      background: #dbeafe;
-      color: #1d4ed8;
-    }
+  &:hover {
+    background: #dbeafe;
+    color: #1d4ed8;
   }
+}
 
-  .delete-btn {
-    color: #dc2626;
+.delete-btn {
+  color: #dc2626;
 
-    &:hover {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
+  &:hover {
+    background: #fee2e2;
+    color: #b91c1c;
   }
+}
 
 .add-btn {
   background-color: var(--primary);
@@ -94,8 +94,14 @@
   }
 }
 
-.rowAllignment{
-  display:flex;
+.modal-backdrop,
+.modal-backdrop.show,
+.modal-backdrop.fade.show {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.rowAllignment {
+  display: flex;
   align-items: center;
   justify-content: space-between;
 }
@@ -128,4 +134,143 @@
       transform: translateX(100%);
     }
   }
+}
+
+//---------Add form
+
+.modal-backdrop.show {
+  opacity: 0.6 !important;
+  background: #000 !important;
+}
+
+.side-modal .modal-dialog {
+  margin: 0 !important;
+  position: fixed !important;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  transform: none !important;
+  display: flex;
+  align-items: stretch;
+}
+
+.side-modal-content {
+  width: 550px !important;
+  height: 100vh;
+  background: #fff;
+  transform: translateX(100%);
+  transition: transform 0.35s ease;
+  pointer-events: auto;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+.center-modal .modal-dialog {
+  max-width: 450px;
+  margin: auto;
+}
+
+.center-modal-content {
+  border-radius: 12px !important;
+  padding: 20px !important;
+  background: #ffffff !important;
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.modal.fade.show .side-modal-content {
+  transform: translateX(0);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+}
+
+.modal-title {
+  margin: 0 !important;
+  font-size: 1rem;
+}
+
+.modal-body {
+  overflow-y: auto !important;
+  flex: 1 1 auto;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 26px;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+}
+.company-form {
+  padding: 5px 4px;
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.form-input {
+  border-radius: 8px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #cfcfcf !important;
+  font-size: 0.9rem !important;
+}
+
+.form-input:focus {
+  border-color: #7367f0 !important;
+  box-shadow: 0 0 0 0.1rem rgba(115, 103, 240, 0.25) !important;
+}
+
+.error-text {
+  color: #ea5455;
+  font-size: 0.75rem;
+  margin-top: 2px;
+  display: block;
+}
+
+.submit-btn {
+  background-color: var(--primary) !important;
+  padding: 8px 22px !important;
+  border-radius: 8px !important;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: #555;
+  margin-top: -5px;
+}
+
+.modal-title {
+  font-weight: 700;
+}
+
+.phone-input-wrapper {
+  padding: 10px 12px !important;
+  border-radius: 8px;
+  border: 1px solid #cfcfcf;
+  font-size: 0.9rem;
+}
+
+.phone-input-wrapper input {
+  border: none !important;
+  box-shadow: none !important;
+  font-size: 0.9rem;
+}
+
+.phone-input-wrapper:focus-within {
+  border-color: #7367f0 !important;
+  box-shadow: 0 0 0 0.1rem rgba(115, 103, 240, 0.25);
+}
+
+.is-invalid {
+  border-color: #ea5455 !important;
 }

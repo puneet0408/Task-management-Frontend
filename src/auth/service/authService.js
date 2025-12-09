@@ -1,7 +1,6 @@
 import axios from "axios";
 import apiConfig from "../config/apiConfig";
 
-
 function getCookie(name) {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -9,7 +8,6 @@ function getCookie(name) {
 }
 
 export default class AuthService {
-
   getToken() {
     return getCookie("accessToken");
   }
@@ -31,16 +29,27 @@ export default class AuthService {
     return axios.get(apiConfig.getProfile, { withCredentials: true });
   }
 
-getCompany(params = {}) {
-  console.log("API Called with:", params);
-  return axios.get(apiConfig.curdCompanyEndpoint, {
-    params,
-    withCredentials: true,
+  getCompany(params = {}) {
+    console.log("API Called with:", params);
+    return axios.get(apiConfig.curdCompanyEndpoint, {
+      params,
+      withCredentials: true,
+    });
+  }
+
+  PostCompany(data) {
+    return axios.post(apiConfig.curdCompanyEndpoint, data, {
+      withCredentials: true,
+    });
+  }
+editCompanyData(data ,uuid) {
+  return axios.patch(`${apiConfig.curdCompanyEndpoint}/${uuid}`, data, {
+    withCredentials: true
   });
 }
-
-      PostCompany(data) {
-    return axios.post(apiConfig.curdCompanyEndpoint,data, { withCredentials: true });
-  }
+DeleteCompanyData(uuid) {
+  return axios.delete(`${apiConfig.curdCompanyEndpoint}/${uuid}`, {
+    // withCredentials: true
+  });
 }
-
+}

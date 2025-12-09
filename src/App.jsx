@@ -7,7 +7,8 @@ import { Toaster } from "react-hot-toast";
 import Company from "./Pages/Company/Company";
 import Dashboard from "./Pages/Dashboard/dashboard";
 import Login from "./Pages/Login/Login";
-
+import 'bootstrap/dist/css/bootstrap.min.css';
+ import "flatpickr/dist/themes/material_blue.css";
 import menuConfig from "./Navigation/menuConfig";
 const routeComponentMap = {
   "/dashboard": <Dashboard />,

@@ -6,7 +6,7 @@ function TableToolbar({ onSearch, onFilter, onExport }) {
   return (
     <div className="table-toolbar">
 
-      <Button outline className="filter-btn" onClick={onFilter}>
+      <Button outline  className="filter-btn" onClick={onFilter}>
         Filter
       </Button>
 
@@ -18,9 +18,9 @@ function TableToolbar({ onSearch, onFilter, onExport }) {
           onChange={(e) => onSearch?.(e.target.value)}
         />
 
-        <Button outline className="export-btn" onClick={onExport}>
+        {/* <Button outline className="export-btn" onClick={onExport}>
           Export
-        </Button>
+        </Button> */}
       </div>
 
     </div>
