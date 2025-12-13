@@ -36,7 +36,7 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
     city: "",
     state: "",
     country: "",
-    status: "Active",
+    status: "active",
   };
 
   const prodValidation = yup.object().shape({
@@ -59,7 +59,6 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
         value ? isValidPhoneNumber(value) : false
       ),
   });
-
   const {
     control,
     handleSubmit,
@@ -75,13 +74,19 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
 
   useEffect(() => {
     if (editData) {
+      const formattedPhone = editData.contact_no
+        ? String(editData.contact_no).startsWith("+")
+          ? String(editData.contact_no)
+          : `+${editData.contact_no}`
+        : "";
+
       reset({
         owner_name: editData.owner_name,
         company_name: editData.company_name,
         email: editData.email,
-        no_of_user: editData.editData,
+        no_of_user: editData.no_of_user,
         address: editData.address,
-        contact_no: editData.contact_no ? String(editData.contact_no) : "",
+        contact_no: formattedPhone,
         city: editData.city,
         state: editData.state,
         country: editData.country,
@@ -215,8 +220,6 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
                   <small className="error-text">{errors.email.message}</small>
                 )}
               </Col>
-
-              {/* Phone Input */}
               <Col md={12}>
                 <Label className="form-label">
                   Contact Number <span className="text-danger">*</span>
@@ -226,7 +229,8 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
                   control={control}
                   render={({ field }) => (
                     <PhoneInput
-                      {...field}
+                      value={field.value}
+                      onChange={field.onChange}
                       defaultCountry="IN"
                       className={`phone-input-wrapper ${
                         errors.contact_no ? "is-invalid" : ""
@@ -235,6 +239,7 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
                     />
                   )}
                 />
+
                 {errors.contact_no && (
                   <small className="error-text">
                     {errors.contact_no.message}
@@ -332,8 +337,8 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
                   control={control}
                   render={({ field }) => (
                     <Input {...field} type="select" className="form-input">
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
                     </Input>
                   )}
                 />

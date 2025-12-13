@@ -30,7 +30,6 @@ export default class AuthService {
   }
 
   getCompany(params = {}) {
-    console.log("API Called with:", params);
     return axios.get(apiConfig.curdCompanyEndpoint, {
       params,
       withCredentials: true,
@@ -49,7 +48,7 @@ editCompanyData(data ,uuid) {
 }
 DeleteCompanyData(uuid) {
   return axios.delete(`${apiConfig.curdCompanyEndpoint}/${uuid}`, {
-    // withCredentials: true
+     withCredentials: true
   });
 }
 }

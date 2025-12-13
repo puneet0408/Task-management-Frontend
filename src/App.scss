@@ -274,3 +274,18 @@
 .is-invalid {
   border-color: #ea5455 !important;
 }
+
+.phone-input-wrapper {
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.phone-input-wrapper input {
+  border: none !important;
+  outline: none;
+}
+
+.phone-input-wrapper .country-selector {
+  border: none !important;
+}

@@ -9,6 +9,7 @@ import {
   Label,
   Button,
 } from "reactstrap";
+import moment from "moment";
 import { useForm, Controller } from "react-hook-form";
 import Flatpickr from "react-flatpickr";
 
@@ -48,8 +49,8 @@ function DateFilterModal({
   const onSubmit = (data) => {
     const fromDate = data.fromDate?.[0] || null;
     const toDate = data.toDate?.[0] || null;
-    const from = fromDate ? fromDate.toISOString().split("T")[0] : null;
-    const to = toDate ? toDate.toISOString().split("T")[0] : null;
+    const from = fromDate ?  moment(fromDate).format("YYYY-MM-DD") : "";
+    const to = toDate ?  moment(toDate).format("YYYY-MM-DD") : "";
     console.log(from ,to ,"atefilter");
     
     setDateFrom(from);

@@ -25,7 +25,7 @@ export const CompanySlice = createSlice({
     loading: false,
     error: "",
     params: { dateFrom: "", dateTo: "" },
-    dateFrom: new Date(),
+    dateFrom:"",
     dateTo: "",
     searchValue: "",
     totalDataCount: 0,

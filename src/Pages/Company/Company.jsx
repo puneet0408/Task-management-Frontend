@@ -7,6 +7,7 @@ import {
   setParams,
   setSearchValue,
 } from "../../Redux/CompanySlice";
+import moment from "moment";
 import CustomTable from "../../Components/CusomTable/CustomTable";
 import Breadcrumbs from "../../Components/BreadCrumbs/Breadcrumbs";
 import { BiTrash, BiEdit } from "react-icons/bi";
@@ -23,6 +24,8 @@ function Company() {
     (state) => state.companyListPage
   );
   const [openAddForm, setOpenAddForm] = useState(false);
+  console.log(openAddForm,"openAddForm");
+  
   const [editData, seteditData] = useState(null);
   const [openDateModel, setOpenDateModel] = useState(false);
   const handleAddCompany = () => {
@@ -80,8 +83,8 @@ function Company() {
       selector: (row) => row?.contact_no,
     },
     {
-      name: "Contact No",
-      selector: (row) => row?.contact_no,
+      name: "Created AT",
+      selector: (row) =>  moment(row?.createdAt).format("DD/MM/YYYY"),
     },
     {
       name: "Actions",
@@ -125,7 +128,7 @@ function Company() {
             { label: "List" },
           ]}
         />
-        <Button onCl ick={handleAddCompany} className="add-btn">
+        <Button onClick={handleAddCompany} className="add-btn">
           + Add Company
         </Button>
       </div>
@@ -155,8 +158,6 @@ function Company() {
               {key}: {value}
             </span>
           ))}
-
-        {/* CLEAR ALL ONLY WHEN ACTIVE FILTERS EXIST */}
         {Object.values(params).some((v) => v) && (
           <span
             className="badge"
