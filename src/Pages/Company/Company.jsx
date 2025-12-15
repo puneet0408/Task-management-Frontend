@@ -6,8 +6,13 @@ import {
   setDateTo,
   setParams,
   setSearchValue,
+  SetSortField,
+  setSortDirection,
+  setStartIndex,
+  setLastIndex,
 } from "../../Redux/CompanySlice";
 import moment from "moment";
+import Pagination from "../../Components/Pagination/Pagination";
 import CustomTable from "../../Components/CusomTable/CustomTable";
 import Breadcrumbs from "../../Components/BreadCrumbs/Breadcrumbs";
 import { BiTrash, BiEdit } from "react-icons/bi";
@@ -20,12 +25,19 @@ import Swal from "sweetalert2";
 function Company() {
   const dispatch = useDispatch();
   const api = useApi();
-  const { allListItems, dateFrom, DateTo, params, searchvalue } = useSelector(
-    (state) => state.companyListPage
-  );
+  const {
+    allListItems,
+    dateFrom,
+    DateTo,
+    params,
+    searchvalue,
+    sortDirection,
+    sortFIeld,
+    totalDataCount,
+    startIndex,
+    lastIndex,
+  } = useSelector((state) => state.companyListPage);
   const [openAddForm, setOpenAddForm] = useState(false);
-  console.log(openAddForm,"openAddForm");
-  
   const [editData, seteditData] = useState(null);
   const [openDateModel, setOpenDateModel] = useState(false);
   const handleAddCompany = () => {
@@ -35,6 +47,13 @@ function Company() {
     setOpenAddForm(true);
     seteditData(row);
   };
+
+  useEffect(() => {
+    if (!sortFIeld || !sortDirection) return;
+
+    dispatch(setParams({ sortFIeld, sortDirection }));
+  }, [sortFIeld, sortDirection]);
+
   const handleDeleteCompany = async (row) => {
     Swal.fire({
       title: "Are you sure?",
@@ -62,29 +81,155 @@ function Company() {
 
   const columns = [
     {
-      name: "SNO",
-      selector: (row, index) => index + 1,
-      width: "50px",
+      name: (
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            dispatch(SetSortField("sno"));
+            dispatch(
+              setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+            );
+          }}
+        >
+          S. No
+          {sortFIeld === "sno" && (
+            <span style={{ marginLeft: 4 }}>
+              {sortDirection === "asc" ? "▲" : "▼"}
+            </span>
+          )}
+        </span>
+      ),
+       cell: (row) => row.sno,
+      width: "80px",
     },
     {
-      name: "Company Name",
+      name: (
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            dispatch(SetSortField("company_name"));
+            dispatch(
+              setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+            );
+          }}
+        >
+          Company Name
+          {sortFIeld === "company_name" && (
+            <span style={{ marginLeft: 4 }}>
+              {sortDirection === "asc" ? "▲" : "▼"}
+            </span>
+          )}
+        </span>
+      ),
       selector: (row) => row?.company_name,
     },
     {
-      name: "Owner Name",
+      name: (
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            dispatch(SetSortField("owner_name"));
+            dispatch(
+              setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+            );
+          }}
+        >
+          Owner Name
+          {sortFIeld === "owner_name" && (
+            <span style={{ marginLeft: 4 }}>
+              {sortDirection === "asc" ? "▲" : "▼"}
+            </span>
+          )}
+        </span>
+      ),
       selector: (row) => row?.owner_name,
     },
     {
-      name: "Email",
+      name: (
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            dispatch(SetSortField("email"));
+            dispatch(
+              setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+            );
+          }}
+        >
+          Email
+          {sortFIeld === "email" && (
+            <span style={{ marginLeft: 4 }}>
+              {sortDirection === "asc" ? "▲" : "▼"}
+            </span>
+          )}
+        </span>
+      ),
       selector: (row) => row?.email,
     },
     {
-      name: "contact No",
+      name: (
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            dispatch(SetSortField("contact_no"));
+            dispatch(
+              setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+            );
+          }}
+        >
+          Contact No
+          {sortFIeld === "contact_no" && (
+            <span style={{ marginLeft: 4 }}>
+              {sortDirection === "asc" ? "▲" : "▼"}
+            </span>
+          )}
+        </span>
+      ),
       selector: (row) => row?.contact_no,
     },
     {
-      name: "Created AT",
-      selector: (row) =>  moment(row?.createdAt).format("DD/MM/YYYY"),
+      name: (
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            dispatch(SetSortField("createdAt"));
+            dispatch(
+              setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+            );
+          }}
+        >
+          Created At
+          {sortFIeld === "createdAt" && (
+            <span style={{ marginLeft: 4 }}>
+              {sortDirection === "asc" ? "▲" : "▼"}
+            </span>
+          )}
+        </span>
+      ),
+      selector: (row) => moment(row?.createdAt).format("DD/MM/YYYY"),
     },
     {
       name: "Actions",
@@ -114,7 +259,7 @@ function Company() {
   }, [params]);
   const handleSearch = (value) => {
     dispatch(setSearchValue(value));
-        dispatch(fetchCompanyData());
+    dispatch(fetchCompanyData());
   };
 
   return (
@@ -136,11 +281,21 @@ function Company() {
         searchvalue={searchvalue}
         onSearch={(value) => handleSearch(value)}
         onFilter={() => setOpenDateModel(true)}
-        // onExport={() => console.log("Export Data")}
       />
       <div className="d-flex flex-wrap gap-1 mb-1">
         {Object.entries(params)
-        .filter(([key, value]) => key !== "searchvalue" && value)
+          .filter(
+            ([key, value]) =>
+              value !== null &&
+              value !== "" &&
+              ![
+                "searchvalue",
+                "offset",
+                "limit",
+                "sortFIeld",
+                "sortDirection",
+              ].includes(key)
+          )
           .map(([key, value]) => (
             <span
               key={key}
@@ -158,7 +313,17 @@ function Company() {
               {key}: {value}
             </span>
           ))}
-        {Object.values(params).some((v) => v) && (
+        {Object.entries(params).some(
+          ([key, value]) =>
+            value &&
+            ![
+              "searchvalue",
+              "offset",
+              "limit",
+              "sortFIeld",
+              "sortDirection",
+            ].includes(key)
+        ) && (
           <span
             className="badge"
             style={{
@@ -174,8 +339,12 @@ function Company() {
             onClick={() =>
               dispatch(
                 setParams({
-                  dateFrom: "",
-                  dateTo: "",
+                  dateFrom: null,
+                  dateTo: null,
+                  offset: 0,
+                  limit: 2,
+                  sortFIeld: null,
+                  sortDirection: null,
                 })
               )
             }
@@ -184,8 +353,33 @@ function Company() {
           </span>
         )}
       </div>
+      <CustomTable
+        columns={columns}
+        data={
+          allListItems?.length
+            ? sortFIeld === "sno" && sortDirection === "desc"
+              ? allListItems
+                  .slice()
+                  .reverse()
+                  .map((item, i) => ({
+                    ...item,
+                    sno: totalDataCount - (params.offset + i),
+                  }))
+              : allListItems.slice().map((item, i) => ({
+                  ...item,
+                 sno: Number(params.offset + i + 1),
+                }))
+            : []
+        }
+      />
 
-      <CustomTable columns={columns} data={allListItems} />
+      <Pagination
+        currentOffset={params.offset}
+        totalCount={totalDataCount}
+        limit={params.limit}
+        onOffsetChange={(offset) => dispatch(setParams({ offset }))}
+        onLimitChange={(limit) => dispatch(setParams({ offset: 0, limit }))}
+      />
       <AddCompany
         openAddForm={openAddForm}
         setOpenAddForm={setOpenAddForm}

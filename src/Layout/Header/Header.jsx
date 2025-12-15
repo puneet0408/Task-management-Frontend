@@ -1,13 +1,24 @@
 // src/components/Layout/Header.js
 import React from "react";
-import { Navbar, Container, Nav, Dropdown } from "react-bootstrap";
+import { Navbar, Nav } from "react-bootstrap";
 import { FiLogOut } from "react-icons/fi";
+import AuthService from "../../auth/service/authService";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
+  const navigate = useNavigate();
   const role = localStorage.getItem("role") || "Guest";
   const userName = localStorage.getItem("name") || "User";
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const api = new AuthService();
+    const res = await api.logout();
+    if (res.status === 500) {
+      navigate("./login");
+    }
+    if (res.status === 201) {
+      navigate("./login");
+    }
     localStorage.clear();
     window.location.reload();
   };
@@ -42,7 +53,7 @@ export default function Header() {
             alignItems: "center",
             width: "100%",
             padding: "0 12px",
-            height: "68px",  
+            height: "68px",
           }}
         >
           <div>
@@ -61,7 +72,7 @@ export default function Header() {
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
-              gap: "20px", 
+              gap: "20px",
               padding: 0,
               margin: 0,
               height: "100%",

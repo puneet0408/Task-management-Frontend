@@ -25,6 +25,10 @@ export default class AuthService {
     return axios.post(apiConfig.login, data, { withCredentials: true });
   }
 
+  logout(){
+     return axios.post(apiConfig.logout, data, { withCredentials: true });
+  }
+
   getProfile() {
     return axios.get(apiConfig.getProfile, { withCredentials: true });
   }

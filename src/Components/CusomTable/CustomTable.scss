@@ -1,9 +1,10 @@
 .custom-table-wrapper {
   width: 100%;
-  overflow-x: auto;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
+  height: 350px;
+  overflow: hidden;
 
   .custom-table {
     width: 100%;
@@ -12,6 +13,10 @@
     color: #374151;
 
     thead {
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+
       th {
         position: sticky;
         top: 0;
@@ -24,7 +29,16 @@
     }
 
     tbody {
+      display: block;
+      height: calc(500px - 48px); // wrapper height - header height
+      overflow-y: auto;
+      overflow-x: hidden;
+
       tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+
         &.table-row {
           transition: background-color 0.2s ease;
 
@@ -50,11 +64,12 @@
           font-style: italic;
         }
       }
+
       .table-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
     }
   }
 }

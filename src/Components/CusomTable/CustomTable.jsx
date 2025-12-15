@@ -1,7 +1,12 @@
 import React from "react";
 import "./CustomTable.scss";
 
-function CustomTable({ columns, data }) {
+function CustomTable({
+  columns,
+  data,
+}) {
+  console.log(data,"datadatadata");
+  
   return (
     <div className="custom-table-wrapper">
       <table className="custom-table">
@@ -10,7 +15,10 @@ function CustomTable({ columns, data }) {
             {columns.map((col, index) => (
               <th
                 key={index}
-                style={{ width: col.width || "auto", textAlign: col.align || "left" }}
+                style={{
+                  width: col.width || "auto",
+                  textAlign: col.align || "left",
+                }}
               >
                 {col.name}
               </th>
