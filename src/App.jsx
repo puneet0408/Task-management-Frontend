@@ -1,19 +1,21 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./App.scss";
+import PasswordCreation from "./Pages/passwordCreation/passwordCreation";
 import Layout from "./Layout/Layout";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
 import Company from "./Pages/Company/Company";
+import UserPage from "./Pages/Users/users";
 import Dashboard from "./Pages/Dashboard/dashboard";
 import Login from "./Pages/Login/Login";
-import 'bootstrap/dist/css/bootstrap.min.css';
- import "flatpickr/dist/themes/material_blue.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "flatpickr/dist/themes/material_blue.css";
 import menuConfig from "./Navigation/menuConfig";
 const routeComponentMap = {
   "/dashboard": <Dashboard />,
-  "/company": <Company/>,
-  "/users": <div>Users</div>,
+  "/company": <Company />,
+  "/users": <UserPage />,
   "/projects": <div>Projects</div>,
   "/tasks": <div>Tasks</div>,
   "/sprint": <div>Sprint</div>,
@@ -25,13 +27,16 @@ export default function App() {
   const role = userData.role;
   return (
     <BrowserRouter>
-    <Toaster position="top-right" reverseOrder={false} />
+      <Toaster position="top-right" reverseOrder={false} />
       <Routes>
+      <Route path="/createpassword/:token" element={<PasswordCreation />} />
         <Route path="/login" element={<Login />} />
         <Route
           path="/"
           element={
-            <ProtectedRoute allowed={["superadmin", "admin", "manager", "employee"]}>
+            <ProtectedRoute
+              allowed={["superadmin", "admin", "manager", "employee"]}
+            >
               <Layout />
             </ProtectedRoute>
           }

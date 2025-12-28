@@ -11,6 +11,7 @@ export default function Header() {
   const userName = localStorage.getItem("name") || "User";
 
   const handleLogout = async () => {
+    console.log("as");
     const api = new AuthService();
     const res = await api.logout();
     if (res.status === 500) {

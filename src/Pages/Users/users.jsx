@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  fetchCompanyData,
+  fetchUsersData,
   setDateFrom,
   setDateTo,
   setParams,
@@ -10,7 +10,7 @@ import {
   setSortDirection,
   setStartIndex,
   setLastIndex,
-} from "../../Redux/CompanySlice";
+} from "../../Redux/UserSlice";
 import moment from "moment";
 import Pagination from "../../Components/Pagination/Pagination";
 import CustomTable from "../../Components/CusomTable/CustomTable";
@@ -19,14 +19,14 @@ import { BiTrash, BiEdit } from "react-icons/bi";
 import { Button, Badge } from "react-bootstrap";
 import useApi from "../../auth/service/useApi";
 import TableToolbar from "../../Components/Toolbox/Toolbox";
-import AddCompany from "./AddCompany/AddCompany";
+import AddUsers from "./AddUsers/Addusers";
 import DateFilterModal from "../../Components/DateFilterModal/DateFiler";
 import Swal from "sweetalert2";
-function Company() {
+function UsersPage() {
   const dispatch = useDispatch();
   const api = useApi();
   const {
-    allListItems,
+    allUserListItems,
     dateFrom,
     DateTo,
     params,
@@ -34,7 +34,12 @@ function Company() {
     sortDirection,
     sortFIeld,
     totalDataCount,
-  } = useSelector((state) => state.companyListPage);
+    startIndex,
+    lastIndex,
+  } = useSelector((state) => state.userListPage);
+
+  const { allListItems } = useSelector((state) => state.companyListPage);
+
   const [openAddForm, setOpenAddForm] = useState(false);
   const [editData, seteditData] = useState(null);
   const [openDateModel, setOpenDateModel] = useState(false);
@@ -64,11 +69,11 @@ function Company() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          let res = await api.DeleteCompanyData(row._id);
+          let res = await api.DeleteUsers(row._id);
 
           if (res.data.data.status == 201) {
             Swal.fire("Deleted!", "Company deleted successfully.", "success");
-            dispatch(fetchCompanyData());
+            dispatch(fetchUsersData());
           }
         } catch (error) {
           Swal.fire("Error!", "Something went wrong.", "error");
@@ -101,7 +106,7 @@ function Company() {
           )}
         </span>
       ),
-       cell: (row) => row.sno,
+      cell: (row) => row.sno,
       width: "80px",
     },
     {
@@ -127,7 +132,12 @@ function Company() {
           )}
         </span>
       ),
-      selector: (row) => row?.company_name,
+      selector: (row) => {
+        const company = allListItems?.find(
+          (list) => list._id === row.company_name
+        );
+        return company?.company_name || "-";
+      },
     },
     {
       name: (
@@ -138,21 +148,21 @@ function Company() {
             cursor: "pointer",
           }}
           onClick={() => {
-            dispatch(SetSortField("owner_name"));
+            dispatch(SetSortField("name"));
             dispatch(
               setSortDirection(sortDirection === "asc" ? "desc" : "asc")
             );
           }}
         >
-          Owner Name
-          {sortFIeld === "owner_name" && (
+          Name
+          {sortFIeld === "name" && (
             <span style={{ marginLeft: 4 }}>
               {sortDirection === "asc" ? "▲" : "▼"}
             </span>
           )}
         </span>
       ),
-      selector: (row) => row?.owner_name,
+      selector: (row) => row?.name,
     },
     {
       name: (
@@ -177,7 +187,13 @@ function Company() {
           )}
         </span>
       ),
-      selector: (row) => row?.email,
+      cell: (row) => {
+        return (
+          <span title={row.email}>
+            {row.email.length > 15 ? row.email.slice(0, 15) + "…" : row.email}
+          </span>
+        );
+      },
     },
     {
       name: (
@@ -230,6 +246,31 @@ function Company() {
       selector: (row) => moment(row?.createdAt).format("DD/MM/YYYY"),
     },
     {
+      name: (
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            dispatch(SetSortField("Role"));
+            dispatch(
+              setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+            );
+          }}
+        >
+          Role
+          {sortFIeld === "Role" && (
+            <span style={{ marginLeft: 4 }}>
+              {sortDirection === "asc" ? "▲" : "▼"}
+            </span>
+          )}
+        </span>
+      ),
+      selector: (row) => row?.role,
+    },
+    {
       name: "Actions",
       width: "120px",
       align: "center",
@@ -253,26 +294,26 @@ function Company() {
     },
   ];
   useEffect(() => {
-    dispatch(fetchCompanyData());
+    dispatch(fetchUsersData());
   }, [params]);
   const handleSearch = (value) => {
     dispatch(setSearchValue(value));
-    dispatch(fetchCompanyData());
+    dispatch(fetchUsersData());
   };
 
   return (
     <div>
       <div className="rowAllignment">
         <Breadcrumbs
-          title={"Company"}
+          title={"Users"}
           items={[
             { label: "Dashboard", path: "/dashboard" },
-            { label: "Company", path: "/company" },
+            { label: "Users", path: "/users" },
             { label: "List" },
           ]}
         />
         <Button onClick={handleAddCompany} className="add-btn">
-          + Add Company
+          + Add Users
         </Button>
       </div>
       <TableToolbar
@@ -354,18 +395,18 @@ function Company() {
       <CustomTable
         columns={columns}
         data={
-          allListItems?.length
+          allUserListItems?.length
             ? sortFIeld === "sno" && sortDirection === "desc"
-              ? allListItems
+              ? allUserListItems
                   .slice()
                   .reverse()
                   .map((item, i) => ({
                     ...item,
                     sno: totalDataCount - (params.offset + i),
                   }))
-              : allListItems.slice().map((item, i) => ({
+              : allUserListItems.slice().map((item, i) => ({
                   ...item,
-                 sno: Number(params.offset + i + 1),
+                  sno: Number(params.offset + i + 1),
                 }))
             : []
         }
@@ -378,7 +419,7 @@ function Company() {
         onOffsetChange={(offset) => dispatch(setParams({ offset }))}
         onLimitChange={(limit) => dispatch(setParams({ offset: 0, limit }))}
       />
-      <AddCompany
+      <AddUsers
         openAddForm={openAddForm}
         setOpenAddForm={setOpenAddForm}
         editData={editData}
@@ -396,4 +437,4 @@ function Company() {
     </div>
   );
 }
-export default Company;
+export default UsersPage;

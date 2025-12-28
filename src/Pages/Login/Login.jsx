@@ -94,14 +94,10 @@ export default function Login() {
       {errors.email && (
         <span className="error-text">{errors.email.message}</span>
       )}
-
-      {/* PASSWORD HEADER */}
       <div className="label-row">
         <label className="input-label">Password</label>
         <a href="#" className="forgot-link">Forgot Password?</a>
       </div>
-
-      {/* PASSWORD FIELD */}
       <div className="password-wrapper">
         <Controller
           name="password"

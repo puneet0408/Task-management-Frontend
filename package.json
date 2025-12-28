@@ -29,6 +29,7 @@
     "react-phone-number-input": "^3.4.14",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.9.6",
+    "react-select": "^5.10.2",
     "reactstrap": "^9.2.3",
     "redux": "^5.0.1",
     "scss": "^0.2.4",

@@ -26,7 +26,8 @@ export default class AuthService {
   }
 
   logout(){
-     return axios.post(apiConfig.logout, data, { withCredentials: true });
+    console.log("logout");
+     return axios.post(apiConfig.logout,{ withCredentials: true });
   }
 
   getProfile() {
@@ -55,4 +56,37 @@ DeleteCompanyData(uuid) {
      withCredentials: true
   });
 }
+
+  getUsers(params = {}) {
+    return axios.get(apiConfig.curdUsersEndpoint, {
+      params,
+      withCredentials: true,
+    });
+  }
+
+  PostUSers(data) {
+    return axios.post(apiConfig.curdUsersEndpoint, data, {
+      withCredentials: true,
+    });
+  }
+editUsers(data ,uuid) {
+  return axios.patch(`${apiConfig.curdUsersEndpoint}/${uuid}`, data, {
+    withCredentials: true
+  });
+}
+DeleteUsers(uuid) {
+  return axios.delete(`${apiConfig.curdUsersEndpoint}/${uuid}`, {
+     withCredentials: true
+  });
+}
+setuserPassword(data, token) {
+  console.log(data,"a");
+  
+  return axios.patch(
+    `${apiConfig.setPasswordEndpoint}/${token}`,
+    { password: data },
+    { withCredentials: true }
+  );
+}
+
 }
