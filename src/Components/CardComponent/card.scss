@@ -1,0 +1,97 @@
+.pro-card {
+  width: 240px;
+  min-height: 165px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pro-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Header */
+.pro-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pro-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  max-width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Star */
+.pro-star {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  padding: 2px;
+}
+
+.pro-star.active {
+  color: #f59e0b;
+}
+
+/* Description */
+.pro-card-desc {
+  margin: 8px 0 10px;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.45;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+/* Divider */
+.pro-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: auto 0 8px;
+}
+
+/* Actions */
+.pro-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.pro-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #374151;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.pro-action-btn svg {
+  font-size: 15px;
+}
+
+.pro-action-btn:hover {
+  color: #111827;
+}
+
+.pro-action-btn.danger:hover {
+  color: #dc2626;
+}

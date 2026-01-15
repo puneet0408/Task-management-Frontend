@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import useApi from "../../auth/service/useApi";
 import { useParams } from "react-router-dom";
+import toast from "react-hot-toast";
+
 
 function PasswordCreation() {
   const [password, setPassword] = useState("");
@@ -26,6 +28,9 @@ function PasswordCreation() {
 
     try {
       const res = await api.setuserPassword(password, token);
+      if(res.status==200){
+       toast.success("password created Sucessfully")
+      }
       console.log("Password set successfully", res);
     } catch (err) {
       setError("Something went wrong");

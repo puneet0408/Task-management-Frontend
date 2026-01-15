@@ -7,6 +7,8 @@ import ProtectedRoute from "./Components/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
 import Company from "./Pages/Company/Company";
 import UserPage from "./Pages/Users/users";
+import Project from "./Pages/Project/Project";
+import SprintPage from "./Pages/Sprint/sprint";
 import Dashboard from "./Pages/Dashboard/dashboard";
 import Login from "./Pages/Login/Login";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -16,9 +18,9 @@ const routeComponentMap = {
   "/dashboard": <Dashboard />,
   "/company": <Company />,
   "/users": <UserPage />,
-  "/projects": <div>Projects</div>,
+  "/projects": <Project/>,
   "/tasks": <div>Tasks</div>,
-  "/sprint": <div>Sprint</div>,
+  "/sprint": <SprintPage/>,
   "/asistance": <div>AI Assistance</div>,
 };
 export default function App() {

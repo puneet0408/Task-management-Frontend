@@ -25,13 +25,13 @@ export default class AuthService {
     return axios.post(apiConfig.login, data, { withCredentials: true });
   }
 
-  logout(){
+  logout() {
     console.log("logout");
-     return axios.post(apiConfig.logout,{ withCredentials: true });
+    return axios.post(apiConfig.logout, { withCredentials: true });
   }
 
-  getProfile() {
-    return axios.get(apiConfig.getProfile, { withCredentials: true });
+  getProfile(uuid) {
+    return axios.get(`${apiConfig.curdUsersEndpoint}/${uuid}`, { withCredentials: true });
   }
 
   getCompany(params = {}) {
@@ -46,16 +46,16 @@ export default class AuthService {
       withCredentials: true,
     });
   }
-editCompanyData(data ,uuid) {
-  return axios.patch(`${apiConfig.curdCompanyEndpoint}/${uuid}`, data, {
-    withCredentials: true
-  });
-}
-DeleteCompanyData(uuid) {
-  return axios.delete(`${apiConfig.curdCompanyEndpoint}/${uuid}`, {
-     withCredentials: true
-  });
-}
+  editCompanyData(data, uuid) {
+    return axios.patch(`${apiConfig.curdCompanyEndpoint}/${uuid}`, data, {
+      withCredentials: true,
+    });
+  }
+  DeleteCompanyData(uuid) {
+    return axios.delete(`${apiConfig.curdCompanyEndpoint}/${uuid}`, {
+      withCredentials: true,
+    });
+  }
 
   getUsers(params = {}) {
     return axios.get(apiConfig.curdUsersEndpoint, {
@@ -69,24 +69,73 @@ DeleteCompanyData(uuid) {
       withCredentials: true,
     });
   }
-editUsers(data ,uuid) {
-  return axios.patch(`${apiConfig.curdUsersEndpoint}/${uuid}`, data, {
-    withCredentials: true
-  });
-}
-DeleteUsers(uuid) {
-  return axios.delete(`${apiConfig.curdUsersEndpoint}/${uuid}`, {
-     withCredentials: true
-  });
-}
-setuserPassword(data, token) {
-  console.log(data,"a");
-  
-  return axios.patch(
-    `${apiConfig.setPasswordEndpoint}/${token}`,
-    { password: data },
-    { withCredentials: true }
-  );
-}
-
+  editUsers(data, uuid) {
+    return axios.patch(`${apiConfig.curdUsersEndpoint}/${uuid}`, data, {
+      withCredentials: true,
+    });
+  }
+  DeleteUsers(uuid) {
+    return axios.delete(`${apiConfig.curdUsersEndpoint}/${uuid}`, {
+      withCredentials: true,
+    });
+  }
+  setuserPassword(data, token) {
+    return axios.patch(
+      `${apiConfig.setPasswordEndpoint}/${token}`,
+      { password: data },
+      { withCredentials: true }
+    );
+  }
+  getProject(params = {}) {
+    return axios.get(apiConfig.curdProjectEndpoint, {
+      params,
+      withCredentials: true,
+    });
+  }
+  PostProject(data) {
+    return axios.post(apiConfig.curdProjectEndpoint, data, {
+      withCredentials: true,
+    });
+  }
+  editProject(data, uuid) {
+    return axios.patch(`${apiConfig.curdProjectEndpoint}/${uuid}`, data, {
+      withCredentials: true,
+    });
+  }
+  DeleteProject(uuid) {
+    return axios.delete(`${apiConfig.curdProjectEndpoint}/${uuid}`, {
+      withCredentials: true,
+    });
+  }
+  getSprint(params = {}) {
+    return axios.get(apiConfig.curdSprintEndpoint, {
+      params,
+      withCredentials: true,
+    });
+  }
+  PostSprint(data) {
+    return axios.post(apiConfig.curdSprintEndpoint, data, {
+      withCredentials: true,
+    });
+  }
+  editSprint(data, uuid) {
+    return axios.patch(`${apiConfig.curdSprintEndpoint}/${uuid}`, data, {
+      withCredentials: true,
+    });
+  }
+  DeleteSprint(uuid) {
+    return axios.delete(`${apiConfig.curdSprintEndpoint}/${uuid}`, {
+      withCredentials: true,
+    });
+  }
+    MarkDefultProject(uuid) {
+    return axios.patch(`${apiConfig.markdefaultProject}/${uuid}`, {
+      withCredentials: true,
+    });
+  }
+      MarkLastPreferenceProject(uuid) {
+    return axios.patch(`${apiConfig.markLastPreferenceProject}/${uuid}`, {
+      withCredentials: true,
+    });
+  }
 }

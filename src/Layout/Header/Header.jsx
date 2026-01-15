@@ -1,14 +1,66 @@
 // src/components/Layout/Header.js
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Navbar, Nav } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
 import { FiLogOut } from "react-icons/fi";
+import { fetchCurrentLogin } from "../../Redux/UserSlice";
 import AuthService from "../../auth/service/authService";
 import { useNavigate } from "react-router-dom";
-
+import { fetchProjectData } from "../../Redux/projectSlice";
+import Select from "react-select";
+import useApi from "../../auth/service/useApi";
 export default function Header() {
   const navigate = useNavigate();
+    const api = useApi();
   const role = localStorage.getItem("role") || "Guest";
   const userName = localStorage.getItem("name") || "User";
+  const [projectOption, setProjectOption] = useState();
+  
+const [selectedProject, setSelectedProject] = useState(null);
+  const { currentUser } = useSelector((state) => state.userListPage);
+  console.log(currentUser,"currentUser");
+  
+  const dispatch = useDispatch();
+  const { ProjectCardItem } = useSelector((state) => state.Projectcardpage);
+  useEffect(() => {
+    dispatch(fetchProjectData());
+    dispatch(fetchCurrentLogin());
+  }, []);
+  useEffect(() => {
+    if (ProjectCardItem?.length) {
+      let option = ProjectCardItem.map((item) => ({
+        label: item?.projectName,
+        value: item?._id,
+      }));
+      setProjectOption(option);
+    }
+  }, [ProjectCardItem]);
+  const handleSelectProject = async (value) => {
+    setSelectedProject(value); 
+    console.log(value,"value");
+    let res = await api.MarkLastPreferenceProject(value?.value);
+    console.log(res, "res");
+    if (res.status == 200) {
+      setRerenderUSer(true);
+      dispatch(fetchProjectData());
+    }
+  };
+
+useEffect(() => {
+  if (
+    currentUser?.preferences?.lastProjectId &&
+    projectOption?.length
+  ) {
+    console.log(currentUser,"currentUser");
+    
+    const defaultOption = projectOption.find(
+      (opt) => opt.value === currentUser?.preferences?.lastProjectId ||null
+    );
+console.log(defaultOption,"defaultOption");
+
+    setSelectedProject(defaultOption || null);
+  }
+}, [currentUser, projectOption]);
 
   const handleLogout = async () => {
     console.log("as");
@@ -23,7 +75,6 @@ export default function Header() {
     localStorage.clear();
     window.location.reload();
   };
-
   return (
     <header
       style={{
@@ -79,6 +130,15 @@ export default function Header() {
               height: "100%",
             }}
           >
+            <span>
+       <Select
+  options={projectOption} 
+  value={selectedProject}   
+  onChange={handleSelectProject}
+  classNamePrefix="react-select"
+  placeholder="Select Project"
+/>
+            </span>
             <span
               style={{
                 fontWeight: "500",

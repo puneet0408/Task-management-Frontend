@@ -2,18 +2,16 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import {
-  fetchUsersData,
+  fetchSprintData,
   setDateFrom,
   setDateTo,
   setParams,
   setSearchValue,
   SetSortField,
   setSortDirection,
-  setStartIndex,
-  setLastIndex,
-} from "../../Redux/UserSlice";
-import LoadingModule from "../../Components/TableLoadingModule/loadingmodule";
+} from "../../Redux/SprintSlice";
 import moment from "moment";
+import LoadingModule from "../../Components/TableLoadingModule/loadingmodule";
 import Pagination from "../../Components/Pagination/Pagination";
 import CustomTable from "../../Components/CusomTable/CustomTable";
 import Breadcrumbs from "../../Components/BreadCrumbs/Breadcrumbs";
@@ -21,15 +19,14 @@ import { BiTrash, BiEdit } from "react-icons/bi";
 import { Button, Badge } from "react-bootstrap";
 import useApi from "../../auth/service/useApi";
 import TableToolbar from "../../Components/Toolbox/Toolbox";
-import AddUsers from "./AddUsers/Addusers";
+import AddSprint from "./AddSprint";
 import DateFilterModal from "../../Components/DateFilterModal/DateFiler";
 import Swal from "sweetalert2";
-function UsersPage() {
+function SprintPage() {
   const dispatch = useDispatch();
   const api = useApi();
   const {
-    allUserListItems,
-    loading,
+    SprintListItem,
     dateFrom,
     DateTo,
     params,
@@ -37,19 +34,15 @@ function UsersPage() {
     sortDirection,
     sortFIeld,
     totalDataCount,
-    startIndex,
-    lastIndex,
-  } = useSelector((state) => state.userListPage);
-
-  const { allListItems } = useSelector((state) => state.companyListPage);
-
+    loading,
+  } = useSelector((state) => state.SprintListPAge);
   const [openAddForm, setOpenAddForm] = useState(false);
   const [editData, seteditData] = useState(null);
   const [openDateModel, setOpenDateModel] = useState(false);
-  const handleAddCompany = () => {
+  const handleAddsprint = () => {
     setOpenAddForm(true);
   };
-  const handleEditCompany = (row) => {
+  const handleEditsprint = (row) => {
     setOpenAddForm(true);
     seteditData(row);
   };
@@ -60,7 +53,7 @@ function UsersPage() {
     dispatch(setParams({ sortFIeld, sortDirection }));
   }, [sortFIeld, sortDirection]);
 
-  const handleDeleteCompany = async (row) => {
+  const handleDeletesprint = async (row) => {
     Swal.fire({
       title: "Are you sure?",
       text: "This action cannot be undone.",
@@ -72,10 +65,11 @@ function UsersPage() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          let res = await api.DeleteUsers(row._id);
+          let res = await api.DeleteSprint(row._id);
+
           if (res.data.data.status == 201) {
-            toast.success("User deleted Sucessfully");
-            dispatch(fetchUsersData());
+            Swal.fire("Deleted!", "sprint deleted successfully.", "success");
+            dispatch(fetchSprintData());
           }
         } catch (error) {
           Swal.fire("Error!", "Something went wrong.", "error");
@@ -134,7 +128,7 @@ function UsersPage() {
           )}
         </span>
       ),
-      selector: (row) => row?.name,
+      selector: (row) => row?.sprintName,
     },
     {
       name: (
@@ -145,27 +139,21 @@ function UsersPage() {
             cursor: "pointer",
           }}
           onClick={() => {
-            dispatch(SetSortField("email"));
+            dispatch(SetSortField("startDate"));
             dispatch(
               setSortDirection(sortDirection === "asc" ? "desc" : "asc")
             );
           }}
         >
-          Email
-          {sortFIeld === "email" && (
+          Started Date
+          {sortFIeld === "startDate" && (
             <span style={{ marginLeft: 4 }}>
               {sortDirection === "asc" ? "▲" : "▼"}
             </span>
           )}
         </span>
       ),
-      cell: (row) => {
-        return (
-          <span title={row.email}>
-            {row.email.length > 15 ? row.email.slice(0, 15) + "…" : row.email}
-          </span>
-        );
-      },
+      selector: (row) => moment(row?.startDate).format("DD/MM/YYYY"),
     },
     {
       name: (
@@ -176,71 +164,21 @@ function UsersPage() {
             cursor: "pointer",
           }}
           onClick={() => {
-            dispatch(SetSortField("contact_no"));
+            dispatch(SetSortField("endDate"));
             dispatch(
               setSortDirection(sortDirection === "asc" ? "desc" : "asc")
             );
           }}
         >
-          Contact No
-          {sortFIeld === "contact_no" && (
+          End Date
+          {sortFIeld === "endDate" && (
             <span style={{ marginLeft: 4 }}>
               {sortDirection === "asc" ? "▲" : "▼"}
             </span>
           )}
         </span>
       ),
-      selector: (row) => row?.contact_no,
-    },
-    {
-      name: (
-        <span
-          style={{
-            display: "flex",
-            alignItems: "center",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            dispatch(SetSortField("createdAt"));
-            dispatch(
-              setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-            );
-          }}
-        >
-          Created At
-          {sortFIeld === "createdAt" && (
-            <span style={{ marginLeft: 4 }}>
-              {sortDirection === "asc" ? "▲" : "▼"}
-            </span>
-          )}
-        </span>
-      ),
-      selector: (row) => moment(row?.createdAt).format("DD/MM/YYYY"),
-    },
-    {
-      name: (
-        <span
-          style={{
-            display: "flex",
-            alignItems: "center",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            dispatch(SetSortField("Role"));
-            dispatch(
-              setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-            );
-          }}
-        >
-          Role
-          {sortFIeld === "Role" && (
-            <span style={{ marginLeft: 4 }}>
-              {sortDirection === "asc" ? "▲" : "▼"}
-            </span>
-          )}
-        </span>
-      ),
-      selector: (row) => row?.role,
+      selector: (row) => moment(row?.endDate).format("DD/MM/YYYY"),
     },
     {
       name: "Actions",
@@ -253,17 +191,14 @@ function UsersPage() {
           </button>
 
           <div className="action-menu">
-            <button
-              className="menu-item"
-              onClick={() => handleEditCompany(row)}
-            >
+            <button className="menu-item" onClick={() => handleEditsprint(row)}>
               <BiEdit className="icon edit" />
               Edit
             </button>
 
             <button
               className="menu-item delete"
-              onClick={() => handleDeleteCompany(row)}
+              onClick={() => handleDeletesprint(row)}
             >
               <BiTrash className="icon delete" />
               Delete
@@ -274,33 +209,26 @@ function UsersPage() {
     },
   ];
   useEffect(() => {
-    dispatch(fetchUsersData());
+    dispatch(fetchSprintData());
   }, [params]);
-  
-let searchTimer;
-const handleSearch = (value) => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    if (value.length > 3) {
-      dispatch(setSearchValue(value));
-      dispatch(fetchUsersData());
-    }
-  }, 500);
-};
+  const handleSearch = (value) => {
+    dispatch(setSearchValue(value));
+    dispatch(fetchSprintData());
+  };
 
   return (
     <div>
       <div className="rowAllignment">
         <Breadcrumbs
-          title={"Users"}
+          title={"Sprint"}
           items={[
             { label: "Dashboard", path: "/dashboard" },
-            { label: "Users", path: "/users" },
+            { label: "Sprint", path: "/sprint" },
             { label: "List" },
           ]}
         />
-        <Button onClick={handleAddCompany} className="add-btn">
-          + Add Users
+        <Button onClick={handleAddsprint} className="add-btn">
+          + Add Sprint
         </Button>
       </div>
       <TableToolbar
@@ -379,39 +307,39 @@ const handleSearch = (value) => {
           </span>
         )}
       </div>
-      {loading ? (
+           {loading ? (
         <LoadingModule />
       ) : (
         <>
-          <CustomTable
-            columns={columns}
-            data={
-              allUserListItems?.length
-                ? sortFIeld === "sno" && sortDirection === "desc"
-                  ? allUserListItems
-                      .slice()
-                      .reverse()
-                      .map((item, i) => ({
-                        ...item,
-                        sno: totalDataCount - (params.offset + i),
-                      }))
-                  : allUserListItems.slice().map((item, i) => ({
-                      ...item,
-                      sno: Number(params.offset + i + 1),
-                    }))
-                : []
-            }
-          />
-          <Pagination
-            currentOffset={params.offset}
-            totalCount={totalDataCount}
-            limit={params.limit}
-            onOffsetChange={(offset) => dispatch(setParams({ offset }))}
-            onLimitChange={(limit) => dispatch(setParams({ offset: 0, limit }))}
-          />
-        </>
+      <CustomTable
+        columns={columns}
+        data={
+          SprintListItem?.length
+            ? sortFIeld === "sno" && sortDirection === "desc"
+              ? SprintListItem.slice()
+                  .reverse()
+                  .map((item, i) => ({
+                    ...item,
+                    sno: totalDataCount - (params.offset + i),
+                  }))
+              : SprintListItem.slice().map((item, i) => ({
+                  ...item,
+                  sno: Number(params.offset + i + 1),
+                }))
+            : []
+        }
+      />
+
+      <Pagination
+        currentOffset={params.offset}
+        totalCount={totalDataCount}
+        limit={params.limit}
+        onOffsetChange={(offset) => dispatch(setParams({ offset }))}
+        onLimitChange={(limit) => dispatch(setParams({ offset: 0, limit }))}
+      />
+      </>
       )}
-      <AddUsers
+      <AddSprint
         openAddForm={openAddForm}
         setOpenAddForm={setOpenAddForm}
         editData={editData}
@@ -429,4 +357,4 @@ const handleSearch = (value) => {
     </div>
   );
 }
-export default UsersPage;
+export default SprintPage;

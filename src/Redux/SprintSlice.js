@@ -1,15 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import AuthService from "../auth/service/authService";
-export const fetchUsersData = createAsyncThunk(
-  "userListPage/fetchUsersData",
+export const fetchSprintData = createAsyncThunk(
+  "SprintListPAge/fetchSprintData",
   async (_, { getState }) => {
     try {
       const state = getState();
-      const { params, searchValue } = state.userListPage;
+      const { params, searchValue } = state.SprintListPAge;
       const { sortFIeld, sortDirection, limit, offset, dateTo, dateFrom } =
         params;
       const api = new AuthService();
-      const res = await api.getUsers({
+      const res = await api.getSprint({
         sortFIeld: sortFIeld == "sno" ? "" : sortFIeld,
         sortDirection: sortFIeld == "sno" ? "" : sortDirection,
         offset: offset || "0",
@@ -18,7 +18,6 @@ export const fetchUsersData = createAsyncThunk(
         dateFrom: dateFrom,
         dateTo: dateTo,
       });
-      console.log(res, "getUsers");
       if (res?.status === 200) {
         return res.data;
       } else {
@@ -27,49 +26,18 @@ export const fetchUsersData = createAsyncThunk(
     } catch (error) {
       console.log(error, "error");
       if (error?.response?.status === 401) {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.replace("/login");
+        console.log(error,"error");
+        // localStorage.clear();
+        // sessionStorage.clear();
+        // window.location.replace("/login");
       }
     }
   }
 );
-export const fetchCurrentLogin = createAsyncThunk(
-  "userListPage/fetchCurrentLogin",
-  async (_, { rejectWithValue }) => {
-    try {
-      const stored = localStorage.getItem("userData");
-      const userData = stored ? JSON.parse(stored) : null;
-      if (!userData?._id) {
-        return rejectWithValue("User not found");
-      }
-      console.log(userData._id,"userData._id");
-      
-      const api = new AuthService();
-      const res = await api.getProfile(userData._id);
-      console.log(res,"ressssss");
-      
-
-      if (res?.status === 200) {
-        return res.data;
-      }
-      return rejectWithValue(`API Error: ${res?.status}`);
-    } catch (error) {
-      if (error?.response?.status === 401) {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.replace("/login");
-      }
-      return rejectWithValue(error?.message || "Something went wrong");
-    }
-  }
-);
-
-export const UsersSlice = createSlice({
-  name: "userListPage",
+export const SprintSlice = createSlice({
+  name: "SprintListPAge",
   initialState: {
-    allUserListItems: [],
-    currentUser: null,
+    SprintListItem: [],
     loading: false,
     error: "",
     params: {
@@ -91,32 +59,19 @@ export const UsersSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUsersData.pending, (state) => {
+      .addCase(fetchSprintData.pending, (state) => {
         state.loading = true;
         state.error = "";
       })
-      .addCase(fetchUsersData.fulfilled, (state, action) => {
+      .addCase(fetchSprintData.fulfilled, (state, action) => {
         state.loading = false;
-        state.allUserListItems = action.payload?.data?.users || [];
+        state.SprintListItem = action.payload?.data?.fetchSprint || [];
         state.totalDataCount = action.payload?.data?.length || 0;
       })
-      .addCase(fetchUsersData.rejected, (state, action) => {
+      .addCase(fetchSprintData.rejected, (state, action) => {
         state.loading = false;
-        state.allUserListItems = [];
+        state.SprintListItem = [];
         state.error = action.payload || "Error fetching company data";
-      })
-      .addCase(fetchCurrentLogin.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchCurrentLogin.fulfilled, (state, action) => {
-        state.loading = false;
-        state.currentUser = action.payload?.data?.user || null;
-      })
-      .addCase(fetchCurrentLogin.rejected, (state, action) => {
-        state.loading = false;
-        state.currentUser = null;
-        state.error = action.payload;
       });
   },
   reducers: {
@@ -159,5 +114,5 @@ export const {
   setSortDirection,
   setLastIndex,
   setStartIndex,
-} = UsersSlice.actions;
-export default UsersSlice.reducer;
+} = SprintSlice.actions;
+export default SprintSlice.reducer;

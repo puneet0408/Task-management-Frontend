@@ -31,6 +31,7 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
     company_name: "",
     email: "",
     no_of_user: "",
+    no_of_project: "",
     address: "",
     contact_no: "",
     city: "",
@@ -84,7 +85,8 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
         owner_name: editData.owner_name,
         company_name: editData.company_name,
         email: editData.email,
-        no_of_user: editData.no_of_user,
+        no_of_user: editData?.limit?.maxUsers ?? "",
+        no_of_project: editData?.limit?.maxProjects ?? "",
         address: editData.address,
         contact_no: formattedPhone,
         city: editData.city,
@@ -107,11 +109,31 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
   const onSubmit = async (formData) => {
     let res;
     try {
+      const formattedPhone = formData.contact_no
+        ? String(formData.contact_no).startsWith("+")
+          ? String(formData.contact_no)
+          : `+${formData.contact_no}`
+        : "";
       const isEdit = editData && editData._id;
+      const payload = {
+        owner_name: formData.owner_name,
+        company_name: formData.company_name,
+        email: formData.email,
+        limit: {
+          maxUsers: formData.no_of_user,
+          maxProjects: Number(formData.no_of_project),
+        },
+        address: formData.address,
+        contact_no: formattedPhone,
+        city: formData.city,
+        state: formData.state,
+        country: formData.country,
+        status: formData.status,
+      };
       if (!isEdit) {
-        res = await api.PostCompany(formData);
+        res = await api.PostCompany(payload);
       } else {
-        res = await api.editCompanyData(formData, editData._id);
+        res = await api.editCompanyData(payload, editData._id);
       }
       if (res.data.data.status == 201) {
         toast.success(
@@ -248,7 +270,7 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
               </Col>
 
               {/* No of Users */}
-              <Col md={12}>
+              <Col md={6}>
                 <Label className="form-label">No. of Users</Label>
                 <Controller
                   name="no_of_user"
@@ -259,6 +281,21 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
                       className="form-input"
                       type="number"
                       placeholder="Enter number of users"
+                    />
+                  )}
+                />
+              </Col>
+              <Col md={6}>
+                <Label className="form-label">No. of Project</Label>
+                <Controller
+                  name="no_of_project"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      className="form-input"
+                      type="number"
+                      placeholder="Enter number of Project"
                     />
                   )}
                 />
