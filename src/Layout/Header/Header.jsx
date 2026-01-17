@@ -2,29 +2,28 @@
 import React, { useEffect, useState } from "react";
 import { Navbar, Nav } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
-import { fetchCurrentLogin } from "../../Redux/UserSlice";
 import AuthService from "../../auth/service/authService";
 import { useNavigate } from "react-router-dom";
 import { fetchProjectData } from "../../Redux/projectSlice";
 import Select from "react-select";
 import useApi from "../../auth/service/useApi";
+import { fetchCurrentLogin } from "../../Redux/UserSlice";
+import { toSlug } from "../../Utils/srugs";
 export default function Header() {
   const navigate = useNavigate();
-    const api = useApi();
+  const api = useApi();
   const role = localStorage.getItem("role") || "Guest";
-  const userName = localStorage.getItem("name") || "User";
   const [projectOption, setProjectOption] = useState();
-  
-const [selectedProject, setSelectedProject] = useState(null);
+ const { companySlug } = useParams();
+  const [selectedProject, setSelectedProject] = useState(null);
   const { currentUser } = useSelector((state) => state.userListPage);
-  console.log(currentUser,"currentUser");
-  
+
   const dispatch = useDispatch();
   const { ProjectCardItem } = useSelector((state) => state.Projectcardpage);
   useEffect(() => {
     dispatch(fetchProjectData());
-    dispatch(fetchCurrentLogin());
   }, []);
   useEffect(() => {
     if (ProjectCardItem?.length) {
@@ -35,32 +34,27 @@ const [selectedProject, setSelectedProject] = useState(null);
       setProjectOption(option);
     }
   }, [ProjectCardItem]);
+
   const handleSelectProject = async (value) => {
-    setSelectedProject(value); 
-    console.log(value,"value");
-    let res = await api.MarkLastPreferenceProject(value?.value);
-    console.log(res, "res");
+    setSelectedProject(value);
+    let res = await api.MarkDefultProject(value?.value);
     if (res.status == 200) {
-      setRerenderUSer(true);
+      dispatch(fetchCurrentLogin());
       dispatch(fetchProjectData());
+      const currentproject = toSlug(res.data.data.activeProject);
+      const activeCompany = toSlug(currentUser?.company?.company_name);
+      navigate(`${`/${activeCompany}/${currentproject}/dashboard`}`);
     }
   };
 
-useEffect(() => {
-  if (
-    currentUser?.preferences?.lastProjectId &&
-    projectOption?.length
-  ) {
-    console.log(currentUser,"currentUser");
-    
-    const defaultOption = projectOption.find(
-      (opt) => opt.value === currentUser?.preferences?.lastProjectId ||null
-    );
-console.log(defaultOption,"defaultOption");
-
-    setSelectedProject(defaultOption || null);
-  }
-}, [currentUser, projectOption]);
+  useEffect(() => {
+    if (currentUser?.preferences?.activeProject?.projectId && projectOption?.length) {
+      const defaultOption = projectOption.find(
+        (opt) => opt.value === currentUser?.preferences?.activeProject?.projectId || null,
+      );
+      setSelectedProject(defaultOption || null);
+    }
+  }, [currentUser, projectOption]);
 
   const handleLogout = async () => {
     console.log("as");
@@ -75,6 +69,7 @@ console.log(defaultOption,"defaultOption");
     localStorage.clear();
     window.location.reload();
   };
+
   return (
     <header
       style={{
@@ -115,7 +110,7 @@ console.log(defaultOption,"defaultOption");
                 fontSize: "1.25rem",
               }}
             >
-              Task Master
+            {companySlug ? currentUser?.company?.company_name :"Task Master "} 
             </h5>
           </div>
           <Nav
@@ -131,13 +126,13 @@ console.log(defaultOption,"defaultOption");
             }}
           >
             <span>
-       <Select
-  options={projectOption} 
-  value={selectedProject}   
-  onChange={handleSelectProject}
-  classNamePrefix="react-select"
-  placeholder="Select Project"
-/>
+              <Select
+                options={projectOption}
+                value={selectedProject}
+                onChange={handleSelectProject}
+                classNamePrefix="react-select"
+                placeholder="Select Project"
+              />
             </span>
             <span
               style={{

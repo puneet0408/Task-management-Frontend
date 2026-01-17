@@ -50,21 +50,23 @@ export default function Login() {
     resolver: yupResolver(LoginSchema),
   });
 
-  const onSubmit = async (formData) => {
-    try {
-      const res = await api.login(formData);
-      if (res.status === 201) {
-        const user = res.data.data;
-        dispatch(fetchCurrentLogin());
-        localStorage.setItem("userData", JSON.stringify(user));
-        localStorage.setItem("role", user.role);
-        toast.success("Logged in successfully");
-        navigate("/dashboard");
-      }
-    } catch (err) {
-      toast.error("Invalid login details");
+const onSubmit = async (formData) => {
+  try {
+    const res = await api.login(formData);
+
+    if (res.status === 201) {
+      const user = res.data.data;
+      localStorage.setItem("userData", JSON.stringify(user));
+      localStorage.setItem("role", user.role);
+      await dispatch(fetchCurrentLogin());
+      toast.success("Logged in successfully");
+      navigate("/", { replace: true });
     }
-  };
+  } catch (err) {
+    toast.error("Invalid login details");
+  }
+};
+
   return (
     <div className="login-wrapper">
       <div className="login-card">

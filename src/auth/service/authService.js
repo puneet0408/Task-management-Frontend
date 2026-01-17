@@ -26,7 +26,6 @@ export default class AuthService {
   }
 
   logout() {
-    console.log("logout");
     return axios.post(apiConfig.logout, { withCredentials: true });
   }
 

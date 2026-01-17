@@ -10,12 +10,10 @@ const ProjectCard = ({ item, onEdit, onDelete, markDefault, isdefaultId }) => {
 
   return (
     <div className="pro-card">
-      {/* Header */}
-      <div className="pro-card-header">
+      <div className="pro-card-header"onClick={() => markDefault?.(item)}>
         <h6 className="pro-card-title">
           {item?.projectName || "Unnamed Project"}
         </h6>
-
         <button
           className={`pro-star ${isDefault ? "active" : ""}`}
           onClick={() => markDefault?.(item)}
@@ -24,16 +22,10 @@ const ProjectCard = ({ item, onEdit, onDelete, markDefault, isdefaultId }) => {
           {isDefault ? <FaStar /> : <FaRegStar />}
         </button>
       </div>
-
-      {/* Description */}
-      <p className="pro-card-desc">
+      <p className="pro-card-desc"onClick={() => markDefault?.(item)}>
         {item?.description || "No description provided"}
       </p>
-
-      {/* Divider */}
-      <div className="pro-divider" />
-
-      {/* Actions */}
+      <div className="pro-divider" onClick={() => markDefault?.(item)}/>
       <div className="pro-actions">
         <button
           className="pro-action-btn"

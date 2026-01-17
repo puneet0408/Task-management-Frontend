@@ -27,9 +27,6 @@ export const fetchProjectData = createAsyncThunk(
       console.log(error, "error");
       if (error?.response?.status === 401) {
         console.log(error,"error");
-        // localStorage.clear();
-        // sessionStorage.clear();
-        // window.location.replace("/login");
       }
     }
   }

@@ -1,11 +1,21 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-export default function ProtectedRoute({ children, allowed }) {
-  const role = localStorage.getItem("role");
+export default function ProtectedRoute({ allowed = [] }) {
+  const { currentUser , loadingsingle } = useSelector((state) => state.userListPage);
 
-  if (!role) return <Navigate to="/login" replace />;
-  if (!allowed.includes(role)) return <Navigate to="/no-access" replace />;
+  if (loadingsingle) {
+    return <div>Loading...</div>;
+  }
 
-  return children;
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+
+  if (allowed.length && !allowed.includes(currentUser?.role)) {
+    return <Navigate to="/no-access" replace />;
+  }
+
+  return <Outlet />;
 }

@@ -27,9 +27,9 @@ export const fetchUsersData = createAsyncThunk(
     } catch (error) {
       console.log(error, "error");
       if (error?.response?.status === 401) {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.replace("/login");
+        // localStorage.clear();
+        // sessionStorage.clear();
+        // window.location.replace("/login");
       }
     }
   }
@@ -56,9 +56,9 @@ export const fetchCurrentLogin = createAsyncThunk(
       return rejectWithValue(`API Error: ${res?.status}`);
     } catch (error) {
       if (error?.response?.status === 401) {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.replace("/login");
+        // localStorage.clear();
+        // sessionStorage.clear();
+        // window.location.replace("/login");
       }
       return rejectWithValue(error?.message || "Something went wrong");
     }
@@ -71,6 +71,7 @@ export const UsersSlice = createSlice({
     allUserListItems: [],
     currentUser: null,
     loading: false,
+    loadingsingle:false,
     error: "",
     params: {
       dateFrom: null,
@@ -106,16 +107,15 @@ export const UsersSlice = createSlice({
         state.error = action.payload || "Error fetching company data";
       })
       .addCase(fetchCurrentLogin.pending, (state) => {
-        state.loading = true;
+        state.loadingsingle = true;
         state.error = null;
       })
       .addCase(fetchCurrentLogin.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingsingle = false;
         state.currentUser = action.payload?.data?.user || null;
       })
       .addCase(fetchCurrentLogin.rejected, (state, action) => {
-        state.loading = false;
-        state.currentUser = null;
+        state.loadingsingle = false;
         state.error = action.payload;
       });
   },

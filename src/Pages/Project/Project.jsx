@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toSlug } from "../../Utils/srugs";
 import {
   fetchProjectData,
   setDateFrom,
@@ -7,17 +9,14 @@ import {
   setParams,
   setSearchValue,
 } from "../../Redux/projectSlice";
+import { fetchCurrentLogin } from "../../Redux/UserSlice";
 import ProjectCard from "../../Components/CardComponent/cardComponent";
-import moment from "moment";
 import Breadcrumbs from "../../Components/BreadCrumbs/Breadcrumbs";
-import { BiTrash, BiEdit } from "react-icons/bi";
-import { Button, Badge } from "react-bootstrap";
 import AddProject from "./AddProject/AddProject";
 import useApi from "../../auth/service/useApi";
 import TableToolbar from "../../Components/Toolbox/Toolbox";
 import DateFilterModal from "../../Components/DateFilterModal/DateFiler";
 import Swal from "sweetalert2";
-import { fetchCurrentLogin } from "../../Redux/UserSlice";
 function Project() {
   const dispatch = useDispatch();
   const api = useApi();
@@ -32,18 +31,19 @@ function Project() {
   } = useSelector((state) => state.Projectcardpage);
   const { currentUser } = useSelector((state) => state.userListPage);
   const [isdefaultProject, setIsDefaultProject] = useState("");
-
+  const navigate = useNavigate();
   const [openAddForm, setOpenAddForm] = useState(false);
   const [rerenderUser, setRerenderUSer] = useState(false);
   const [editData, seteditData] = useState(null);
   const [openDateModel, setOpenDateModel] = useState(false);
+
   useEffect(() => {
-    dispatch(fetchCurrentLogin());
     setIsDefaultProject(currentUser?.preferences?.defaultProjectId || null);
-  }, [dispatch, rerenderUser,ProjectCardItem]);
+  }, [rerenderUser, ProjectCardItem]);
   const handleAddProject = () => {
     setOpenAddForm(true);
   };
+
   const handleEditProject = (row) => {
     setOpenAddForm(true);
     seteditData(row);
@@ -51,7 +51,6 @@ function Project() {
 
   useEffect(() => {
     if (!sortFIeld || !sortDirection) return;
-
     dispatch(setParams({ sortFIeld, sortDirection }));
   }, [sortFIeld, sortDirection]);
 
@@ -68,7 +67,6 @@ function Project() {
       if (result.isConfirmed) {
         try {
           let res = await api.DeleteProject(row._id);
-
           if (res.data.data.status == 201) {
             Swal.fire("Deleted!", "Project deleted successfully.", "success");
             dispatch(fetchProjectData());
@@ -83,16 +81,20 @@ function Project() {
   useEffect(() => {
     dispatch(fetchProjectData());
   }, [params]);
+
   const handleSearch = (value) => {
     dispatch(setSearchValue(value));
     dispatch(fetchProjectData());
   };
+
   const handleDefaultProject = async (value) => {
     let res = await api.MarkDefultProject(value?._id);
-    console.log(res, "res");
     if (res.status == 200) {
+      const currentproject = toSlug(res.data.data.activeProject);
+      const activeCompany = toSlug(currentUser?.company?.company_name);
+      navigate(`${`/${activeCompany}/${currentproject}/dashboard`}`);
+      await dispatch(fetchCurrentLogin());
       setRerenderUSer(true);
-      setIsDefaultProject(res.data.data.defaultProjectId);
       dispatch(fetchProjectData());
     }
   };
@@ -126,7 +128,7 @@ function Project() {
                 "limit",
                 "sortFIeld",
                 "sortDirection",
-              ].includes(key)
+              ].includes(key),
           )
           .map(([key, value]) => (
             <span
@@ -154,7 +156,7 @@ function Project() {
               "limit",
               "sortFIeld",
               "sortDirection",
-            ].includes(key)
+            ].includes(key),
         ) && (
           <span
             className="badge"
@@ -177,7 +179,7 @@ function Project() {
                   limit: 2,
                   sortFIeld: null,
                   sortDirection: null,
-                })
+                }),
               )
             }
           >
@@ -203,8 +205,6 @@ function Project() {
             markDefault={handleDefaultProject}
           />
         ))}
-
-        {/* Add Project Card */}
         <div
           onClick={handleAddProject}
           style={{
@@ -256,4 +256,5 @@ function Project() {
     </div>
   );
 }
+
 export default Project;
