@@ -18,6 +18,7 @@ import Company from "./Pages/Company/Company";
 import UserPage from "./Pages/Users/users";
 import Project from "./Pages/Project/Project";
 import SprintPage from "./Pages/Sprint/sprint";
+import Task from "./Pages/Tasks/task";
 export default function App() {
   return (
     <BrowserRouter>
@@ -44,7 +45,7 @@ export default function App() {
           <Route path=":companySlug/:projectId" element={<Layout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="tasks" element={"task"} />
+            <Route path="tasks" element={<Task/>} />
             <Route path="sprint" element={<SprintPage />} />
           </Route>
         </Route>

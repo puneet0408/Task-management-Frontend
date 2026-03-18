@@ -41,8 +41,6 @@ function UsersPage() {
     lastIndex,
   } = useSelector((state) => state.userListPage);
 
-  const { allListItems } = useSelector((state) => state.companyListPage);
-
   const [openAddForm, setOpenAddForm] = useState(false);
   const [editData, seteditData] = useState(null);
   const [openDateModel, setOpenDateModel] = useState(false);

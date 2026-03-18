@@ -81,12 +81,10 @@ function AddUsers({ openAddForm, setOpenAddForm, editData, seteditData }) {
     resolver: yupResolver(prodValidation),
     defaultValues,
   });
-  console.log(errors, "das");
 
   const dispatch = useDispatch();
   const [companyDropdown, setCompanyDropdown] = useState([]);
   const [ProjectDropdown, setProjectDropdown] = useState([]);
-  console.log(companyDropdown, "companyDropdown");
 
   useEffect(() => {
     if (editData) {
@@ -148,7 +146,7 @@ function AddUsers({ openAddForm, setOpenAddForm, editData, seteditData }) {
       const res = isEdit
         ? await api.editUsers(formData, editData._id)
         : await api.PostUSers(formData);
-      if (res?.data?.status === 201) {
+      if (res?.status === 201) {
         toast.success(
           isEdit ? "User updated successfully" : "User created successfully"
         );
