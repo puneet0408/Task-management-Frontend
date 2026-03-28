@@ -132,8 +132,77 @@ export default class AuthService {
       withCredentials: true,
     });
   }
+      MarkDefultSprint(uuid) {
+        console.log(uuid,"uuid");
+    return axios.patch(`${apiConfig.markdefaultSprint}/${uuid}`, {
+      withCredentials: true,
+    });
+  }
       MarkLastPreferenceProject(uuid) {
     return axios.patch(`${apiConfig.markLastPreferenceProject}/${uuid}`, {
+      withCredentials: true,
+    });
+  }
+    gettask(params = {}) {
+    return axios.get(apiConfig.curdTaskEndpoint, {
+      params,
+      withCredentials: true,
+    });
+  }
+  createTask(data) {
+    return axios.post(apiConfig.curdTaskEndpoint, data, {
+      withCredentials: true,
+    });
+  }
+  updateTask(uuid, data) {
+    return axios.patch(`${apiConfig.curdTaskEndpoint}/${uuid}`, data, {
+      withCredentials: true,
+    });
+  }
+  Deletetask(uuid) {
+    return axios.delete(`${apiConfig.curdTaskEndpoint}/${uuid}`, {
+      withCredentials: true,
+    });
+  }
+     gettagsApi(params = {}) {
+    return axios.get(apiConfig.curdTagEndpoint, {
+      params,
+      withCredentials: true,
+    });
+  }
+  createTag(data) {
+    return axios.post(apiConfig.curdTagEndpoint, data, {
+      withCredentials: true,
+    });
+  }
+  editTag(data, uuid) {
+    return axios.patch(`${apiConfig.curdTagEndpoint}/${uuid}`, data, {
+      withCredentials: true,
+    });
+  }
+  DeleteTag(uuid) {
+    return axios.delete(`${apiConfig.curdTagEndpoint}/${uuid}`, {
+      withCredentials: true,
+    });
+  }
+    getkanbancolumn(params = {}) {
+    return axios.get(apiConfig.curdkanbanTaskColumn, {
+      params,
+      withCredentials: true,
+    });
+  }
+  createKanbanColumn(data) {
+    return axios.post(apiConfig.curdkanbanTaskColumn, data, {
+      withCredentials: true,
+    });
+  }
+  editKanbanColumn(data) {
+    return axios.patch(`${apiConfig.curdkanbanTaskColumn}`, data, {
+      withCredentials: true,
+    });
+  }
+  DeleteKanbanColumn(uuid) {
+    return axios.delete(`${apiConfig.curdkanbanTaskColumn}/${uuid}`, {
       withCredentials: true,
     });
   }

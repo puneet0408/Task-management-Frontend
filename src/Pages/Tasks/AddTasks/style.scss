@@ -1,0 +1,97 @@
+
+.azure-modal-body {
+  background: #f5f7fb;
+}
+
+.azure-card {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.azure-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #374151;
+}
+
+.azure-input,
+.azure-textarea {
+  border-radius: 6px !important;
+  border: 1px solid #d1d5db !important;
+  font-size: 13px !important;
+}
+
+.azure-input:focus,
+.azure-textarea:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.15) !important;
+}
+
+.azure-title-input {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  padding: 10px 12px !important;
+}
+
+.azure-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.azure-right-panel .azure-card {
+  padding: 14px;
+}
+
+.azure-footer {
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+}
+/* ================= MODAL SIZE ================= */
+.azure-task-modal {
+  max-width: 85%;
+}
+
+/* ================= FIXED HEIGHT ================= */
+.azure-task-modal .modal-content {
+  height: 80vh;              // ⬅ reduced height
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= HEADER ================= */
+.azure-task-modal .modal-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* ================= SCROLLABLE BODY ================= */
+.azure-modal-body-scroll {
+  flex: 1;                   // ⬅ takes remaining height
+  overflow-y: auto;          // ⬅ inner scroll
+  background: #f5f7fb;
+  padding: 20px;
+}
+
+/* ================= FOOTER (FIXED) ================= */
+.azure-footer {
+  flex-shrink: 0;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 12px 20px;
+}
+
+/* ================= OPTIONAL: NICE SCROLLBAR ================= */
+.azure-modal-body-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.azure-modal-body-scroll::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 4px;
+}

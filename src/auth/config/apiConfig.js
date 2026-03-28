@@ -9,4 +9,8 @@ export default {
   markdefaultProject: "/api/auth/v1/project/markdefaultproject",
   markLastPreferenceProject: "/api/auth/v1/project/lastPreferenceproject",
   curdSprintEndpoint: "/api/auth/v1/sprint",
+    markdefaultSprint :"/api/auth/v1/project/markdefaultsprint",
+    curdTaskEndpoint:"/api/auth/v1/task",
+    curdTagEndpoint:"/api/auth/v1/tag",
+    curdkanbanTaskColumn:"/api/auth/vi/kanbancolumn",
 };
