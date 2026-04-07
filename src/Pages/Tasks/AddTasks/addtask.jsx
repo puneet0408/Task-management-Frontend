@@ -11,6 +11,7 @@ import {
   Label,
   Button,
 } from "reactstrap";
+import AuthService from "../../../auth/service/authService";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
 import { useForm, Controller } from "react-hook-form";
@@ -197,16 +198,13 @@ function AddTask({
   clickedStory,
   editModeldata,
   seteditModelData,
+  userList,
 }) {
-  console.log(editModeldata, "editModeldata");
-  console.log(selectedWorkType, "selectedWorkType");
 
   const api = useApi();
   const dispatch = useDispatch();
   const { SprintListItem } = useSelector((s) => s.SprintListPAge);
-  console.log(SprintListItem, "sperint");
 
-  const { allUserListItems } = useSelector((s) => s.userListPage);
 
   const [assignOptions, setAssignOptions] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
@@ -240,31 +238,37 @@ function AddTask({
   });
 
   useEffect(() => {
-    if (editModeldata && tagOptions.length) {
-      const editTags = (editModeldata?.tags || []).map((t) => ({
-        label: t.label || t.value,
-        value: t.value || t.label,
+    if (!editModeldata || !tagOptions.length) return;
+
+    const editTags = (editModeldata?.tags || [])
+      .filter(Boolean)
+      .filter((t) => t.label || t.value)
+      .map((t) => ({
+        label: t.label || t.value || "",
+        value: t.value || t.label || "",
       }));
-      const mergedOptions = [
-        ...tagOptions,
-        ...editTags.filter(
-          (t) => !tagOptions.some((opt) => opt.value === t.value)
-        ),
-      ];
+    const mergedOptions = [
+      ...tagOptions,
+      ...editTags.filter(
+        (t) => !tagOptions.some((opt) => opt.value === t.value)
+      ),
+    ];
 
-      setTagOptions(mergedOptions);
+    setTagOptions(mergedOptions);
 
-      reset({
-        title: editModeldata?.title || "",
-        description: editModeldata?.description || "",
-        priority: editModeldata?.priority || "2",
-        sprintId: editModeldata?.sprintId || "",
-        tags: editTags,
-        originalEstimate: editModeldata?.originalEstimate || 0,
-        remainingTime: editModeldata?.remainingTime || 0,
-        completedTime: editModeldata?.completedTime || 0,
-      });
-    }
+    reset({
+      title: editModeldata?.title || "",
+      description: editModeldata?.description || "",
+      priority: editModeldata?.priority || "2",
+      sprintId: editModeldata?.sprintId || "",
+      tags: editTags,
+      originalEstimate: editModeldata?.originalEstimate || 0,
+      remainingTime: editModeldata?.remainingTime || 0,
+      completedTime: editModeldata?.completedTime || 0,
+      assignedTo:
+        editModeldata?.assignedTo?._id || editModeldata?.assignedTo || null,
+      taskStatus: editModeldata?.taskStatus || "",
+    });
   }, [editModeldata, tagOptions.length]);
   useEffect(() => {
     const kanbanColumns = async () => {
@@ -297,11 +301,17 @@ function AddTask({
   }, []);
 
   useEffect(() => {
-    setAssignOptions(
-      allUserListItems.map((u) => ({ label: u.name, value: u._id }))
-    );
-  }, [allUserListItems]);
+    if (!Array.isArray(userList)) return;
 
+    const options = userList
+      .filter((u) => u?._id)
+      .map((u) => ({
+        label: u.name || "Unnamed",
+        value: u._id,
+      }));
+
+    setAssignOptions(options);
+  }, [userList]);
 
   useEffect(() => {
     const getTags = async () => {
@@ -531,6 +541,14 @@ function AddTask({
                         options={assignOptions}
                         placeholder="Unassigned"
                         isClearable
+                        value={
+                          assignOptions.find(
+                            (opt) => opt.value === field.value
+                          ) ?? null
+                        }
+                        onChange={(selected) =>
+                          field.onChange(selected?.value ?? null)
+                        }
                       />
                     )}
                   />

@@ -112,7 +112,6 @@ function AddUsers({ openAddForm, setOpenAddForm, editData, seteditData }) {
   const stored = localStorage.getItem("userData");
   const userData = stored ? JSON.parse(stored) : {};
   const loginrole = userData.role;
-  console.log(loginrole, "loginrole");
 
   useEffect(() => {
     dispatch(fetchCompanyData());
@@ -155,7 +154,6 @@ function AddUsers({ openAddForm, setOpenAddForm, editData, seteditData }) {
         dispatch(fetchUsersData());
       }
     } catch (err) {
-      console.log(err);
       setloading(false);
       toast.error("Something went wrong");
     }

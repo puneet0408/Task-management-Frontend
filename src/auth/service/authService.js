@@ -21,7 +21,6 @@ export default class AuthService {
   }
 
   login(data) {
-    console.log("LOGIN CALLED", data);
     return axios.post(apiConfig.login, data, { withCredentials: true });
   }
 
@@ -58,6 +57,12 @@ export default class AuthService {
 
   getUsers(params = {}) {
     return axios.get(apiConfig.curdUsersEndpoint, {
+      params,
+      withCredentials: true,
+    });
+  }
+    getAllUsers(params = {}) {
+    return axios.get(apiConfig.getallUser, {
       params,
       withCredentials: true,
     });
@@ -133,7 +138,6 @@ export default class AuthService {
     });
   }
       MarkDefultSprint(uuid) {
-        console.log(uuid,"uuid");
     return axios.patch(`${apiConfig.markdefaultSprint}/${uuid}`, {
       withCredentials: true,
     });

@@ -1,18 +1,11 @@
-import React from "react";
+import { useState, useEffect } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CiMenuKebab } from "react-icons/ci";
-import { useState, useEffect } from "react";
 
 const TYPE_META = {
   task: { label: "Task", bg: "#eff6ff", color: "#1e40af", border: "#93c5fd" },
   bug: { label: "Bug", bg: "#fef2f2", color: "#991b1b", border: "#fca5a5" },
   story: { label: "Story", bg: "#f5f3ff", color: "#5b21b6", border: "#c4b5fd" },
-};
-
-const PRIORITY_DOT = {
-  1: { color: "#dc2626", label: "High" },
-  2: { color: "#f59e0b", label: "Medium" },
-  3: { color: "#10b981", label: "Low" },
 };
 
 const AVATAR_COLORS = [
@@ -40,45 +33,40 @@ function getInitials(name) {
 }
 
 export default function TaskCard({ task, handleWorkItemChange }) {
-
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: task._id,
     });
   const [openMenuId, setOpenMenuId] = useState(null);
 
-  const type = task.type ?? "task";
-  const meta = TYPE_META[type] ?? TYPE_META.task;
-  const priority = PRIORITY_DOT[task.priority] ?? PRIORITY_DOT["2"];
+  const meta = TYPE_META[task.type] ?? TYPE_META.task;
   const assigned = task.assignedTo;
   const avatarColor = getAvatarColor(assigned?.label ?? assigned);
   const initials = getInitials(assigned?.label ?? assigned);
   const isUnassigned = !assigned || assigned?.value === null;
 
-  const menuItemStyle = {
-    padding: "8px 12px",
-    fontSize: "12px",
-    cursor: "pointer",
-    transition: "0.2s",
-  };
   useEffect(() => {
     const handleClickOutside = () => setOpenMenuId(null);
     window.addEventListener("click", handleClickOutside);
-
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
+
+  const handleCardClick = (e) => {
+    e.stopPropagation();
+    if (isDragging) return;
+    handleWorkItemChange({ value: task?.type }, task);
+  };
 
   return (
     <div
       ref={setNodeRef}
-      {...listeners}
-      {...attributes}
+      onClick={handleCardClick}
       style={{
         background: "#fff",
         border: "1px solid #e5e7eb",
         borderRadius: 8,
         padding: "10px 12px",
-        cursor: isDragging ? "grabbing" : "grab",
+        cursor: "default", // important
         opacity: isDragging ? 0.5 : 1,
         transform: transform
           ? `translate(${transform.x}px, ${transform.y}px)`
@@ -96,7 +84,7 @@ export default function TaskCard({ task, handleWorkItemChange }) {
         e.currentTarget.style.borderColor = "#e5e7eb";
       }}
     >
-      {/* Top row — type badge + priority dot */}
+      {/* HEADER */}
       <div
         style={{
           display: "flex",
@@ -118,56 +106,71 @@ export default function TaskCard({ task, handleWorkItemChange }) {
         >
           {meta.label}
         </span>
-        <div style={{ position: "relative" }}>
-          <CiMenuKebab
-            style={{ cursor: "pointer" }}
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenMenuId(openMenuId === task._id ? null : task._id);
-            }}
-          />
 
-          {openMenuId === task._id && (
-            <div
-              style={{
-                position: "absolute",
-                top: "20px",
-                right: 0,
-                background: "#fff",
-                border: "1px solid #e5e7eb",
-                borderRadius: "6px",
-                boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-                zIndex: 1000,
-                minWidth: "120px",
+        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+          <div
+            {...listeners}
+            {...attributes}
+            style={{
+              cursor: "grab",
+              padding: "2px 6px",
+              background: "#f3f4f6",
+              borderRadius: "4px",
+              fontSize: "12px",
+            }}
+          >
+            ⠿
+          </div>
+
+          {/* MENU */}
+          <div style={{ position: "relative" }}>
+            <CiMenuKebab
+              style={{ cursor: "pointer" }}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenMenuId(openMenuId === task._id ? null : task._id);
               }}
-            >
+            />
+
+            {openMenuId === task._id && (
               <div
-                onPointerDown={(e) => e.stopPropagation()}
-                style={menuItemStyle}
-                onClick={() => handleWorkItemChange({ value: task?.type }, task)}
+                style={{
+                  position: "absolute",
+                  top: "20px",
+                  right: 0,
+                  background: "#fff",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "6px",
+                  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                  zIndex: 1000,
+                  minWidth: "120px",
+                }}
               >
-                View
+                <div
+                  onPointerDown={(e) => e.stopPropagation()}
+                  style={{ padding: "8px 12px", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleWorkItemChange({ value: task?.type }, task);
+                  }}
+                >
+                  View
+                </div>
+
+                <div
+                  onPointerDown={(e) => e.stopPropagation()}
+                  style={{ padding: "8px 12px", cursor: "pointer" }}
+                >
+                  Delete
+                </div>
               </div>
-              <div
-                onPointerDown={(e) => e.stopPropagation()}
-                style={menuItemStyle}
-              >
-                Delete
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-        {/* <div
-          title={priority.label}
-          style={{
-            width: 8, height: 8, borderRadius: "50%",
-            background: priority.color, flexShrink: 0,
-          }}
-        /> */}
       </div>
 
-      {/* Title */}
+      {/* TITLE */}
       <div
         style={{
           fontSize: 12,
@@ -180,6 +183,7 @@ export default function TaskCard({ task, handleWorkItemChange }) {
         {task.title}
       </div>
 
+      {/* FOOTER */}
       <div
         style={{
           display: "flex",

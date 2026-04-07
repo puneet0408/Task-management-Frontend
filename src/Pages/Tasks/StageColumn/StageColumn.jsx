@@ -14,7 +14,7 @@ const COLUMN_COLORS = [
   "#48cae4",
 ];
 
-const bugStageS = [
+const bugStages = [
   { label: "New", value: "new" },
   { label: "Active", value: "active" },
   { label: "QA", value: "qa" },
@@ -23,7 +23,7 @@ const bugStageS = [
   { label: "Live", value: "live" },
 ];
 
-const taskStageS = [
+const taskStages = [
   { label: "New", value: "new" },
   { label: "In Progress", value: "in_progress" },
   { label: "QA", value: "qa" },
@@ -393,7 +393,7 @@ function CustomizeColumns({ openAddForm, setOpenAddForm }) {
                             updateSelected({ bugState: e.target.value })
                           }
                         >
-                          {bugStageS.map((s) => (
+                          {bugStages.map((s) => (
                             <option key={s.value} value={s.value}>
                               {s.label}
                             </option>
@@ -418,7 +418,7 @@ function CustomizeColumns({ openAddForm, setOpenAddForm }) {
                             updateSelected({ taskState: e.target.value })
                           }
                         >
-                          {taskStageS.map((s) => (
+                          {taskStages.map((s) => (
                             <option key={s.value} value={s.value}>
                               {s.label}
                             </option>

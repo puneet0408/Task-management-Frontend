@@ -51,7 +51,6 @@ function DateFilterModal({
     const toDate = data.toDate?.[0] || null;
     const from = fromDate ?  moment(fromDate).format("YYYY-MM-DD") : "";
     const to = toDate ?  moment(toDate).format("YYYY-MM-DD") : "";
-    console.log(from ,to ,"atefilter");
     
     setDateFrom(from);
     setDateTo(to);

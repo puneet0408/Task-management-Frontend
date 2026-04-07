@@ -57,7 +57,6 @@ export default function Header() {
   }, [currentUser, projectOption]);
 
   const handleLogout = async () => {
-    console.log("as");
     const api = new AuthService();
     const res = await api.logout();
     if (res.status === 500) {

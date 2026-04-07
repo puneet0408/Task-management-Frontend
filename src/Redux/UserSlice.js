@@ -18,7 +18,6 @@ export const fetchUsersData = createAsyncThunk(
         dateFrom: dateFrom,
         dateTo: dateTo,
       });
-      console.log(res, "getUsers");
       if (res?.status === 200) {
         return res.data;
       } else {
@@ -34,6 +33,36 @@ export const fetchUsersData = createAsyncThunk(
     }
   }
 );
+export const fetchAllUsersData = createAsyncThunk(
+  "userListPage/fetchUsersData",
+  async (_, { getState }) => {
+    try {
+      const state = getState();
+      const { params, searchValue } = state.userListPage;
+      const { sortFIeld, sortDirection, limit, offset, dateTo, dateFrom } =
+        params;
+      const api = new AuthService();
+      const res = await api.getAllUsers({
+        sortFIeld: sortFIeld == "sno" ? "" : sortFIeld,
+        sortDirection: sortFIeld == "sno" ? "" : sortDirection,
+        offset: offset || "0",
+        limit: limit || "10",
+        searchValue,
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+      });
+      if (res?.status === 200) {
+        return res.data;
+      } else {
+        console.error(`API Error: ${res?.status}`);
+      }
+    } catch (error) {
+      console.log(error, "error");
+      if (error?.response?.status === 401) {
+      }
+    }
+  }
+);
 export const fetchCurrentLogin = createAsyncThunk(
   "userListPage/fetchCurrentLogin",
   async (_, { rejectWithValue }) => {
@@ -43,11 +72,9 @@ export const fetchCurrentLogin = createAsyncThunk(
       if (!userData?._id) {
         return rejectWithValue("User not found");
       }
-      console.log(userData._id,"userData._id");
       
       const api = new AuthService();
       const res = await api.getProfile(userData._id);
-      console.log(res,"ressssss");
       
 
       if (res?.status === 200) {

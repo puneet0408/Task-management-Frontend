@@ -31,7 +31,6 @@ function PasswordCreation() {
       if(res.status==200){
        toast.success("password created Sucessfully")
       }
-      console.log("Password set successfully", res);
     } catch (err) {
       setError("Something went wrong");
     }

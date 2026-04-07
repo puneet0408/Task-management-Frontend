@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { fetchSprintData } from "../../Redux/SprintSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { Button } from "react-bootstrap";
@@ -9,14 +9,7 @@ import { DndContext } from "@dnd-kit/core";
 import KanbanBoard from "./kanbanBoard";
 import { CiSettings } from "react-icons/ci";
 import StageColumns from "./StageColumn/StageColumn";
-
-const columns = [
-  { id: "new", title: "Yet to Start" },
-  { id: "progress", title: "In Progress" },
-  { id: "readyqa", title: "Ready for QA" },
-  { id: "qa", title: "QA in Progress" },
-  { id: "done", title: "QA Passed" },
-];
+import FilterComponent from "./filter";
 
 function TaskPage() {
   const api = useApi();
@@ -27,9 +20,18 @@ function TaskPage() {
   const [stageColumnModel, setStageColumnMOdel] = useState(false);
 
   const [SprintOption, setSprintOption] = useState([]);
-  const [ActiveSprint, setActiveSprint] = useState(null);
   const [openTaskModel, setTaskModel] = useState(false);
   const [columns, setColumns] = useState([]);
+  const [userList, setUserList] = useState("");
+
+  const [ActiveSprint, setActiveSprint] = useState(() => {
+    const stored = localStorage.getItem("userData");
+    const userData = stored ? JSON.parse(stored) : {};
+    return {
+      label: userData?.preferences?.Activesprint?.sprintName,
+      value: userData?.preferences?.Activesprint?.sprintId,
+    };
+  });
 
   useEffect(() => {
     const kanbanColumns = async () => {
@@ -42,6 +44,19 @@ function TaskPage() {
       }
     };
     kanbanColumns();
+  }, []);
+
+  useEffect(() => {
+    const getAllUserlist = async () => {
+      try {
+        const res = await api.getAllUsers();
+        let data = res?.data?.data?.users || [];
+        setUserList(data);
+      } catch (error) {
+        console.error("Error fetching kanban columns:", error);
+      }
+    };
+    getAllUserlist();
   }, []);
 
   const [stories, setStories] = useState([]);
@@ -69,6 +84,13 @@ function TaskPage() {
   const [editModeldata, seteditModelData] = useState(false);
   const [rerender, setRerender] = useState(false);
 
+  const [activeFilters, setActiveFilters] = useState({
+    types: [],
+    columns: [],
+    assignees: [],
+    priority: [],
+  });
+
   const handleWorkItemChange = (option, data = {}) => {
     if (option.value == "edit_story") {
       seteditModelData(data);
@@ -94,7 +116,27 @@ function TaskPage() {
 
   useEffect(() => {
     const fetchtask = async () => {
-      const response = await api.gettask();
+      const payload = {};
+      if (activeFilters.types?.length) {
+        payload.type = activeFilters.types.map((t) => t.value).join(",");
+      }
+      if(ActiveSprint){
+       payload.sprintId = ActiveSprint.value;
+      }
+      if (activeFilters.columns?.length) {
+        payload.taskStatus = activeFilters.columns
+          .map((c) => c.value)
+          .join(",");
+      }
+      if (activeFilters.assignees?.length) {
+        payload.assignedTo = activeFilters.assignees
+          .map((a) => a.value)
+          .join(",");
+      }
+      if (activeFilters.priority?.length) {
+        payload.priority = activeFilters.priority.map((a) => a.value).join(",");
+      }
+      const response = await api.gettask(payload);
       const data = response?.data?.data || [];
       const storiesMap = {};
       data.forEach((item) => {
@@ -124,11 +166,10 @@ function TaskPage() {
     };
 
     fetchtask();
-  }, [rerender]);
+  }, [rerender, activeFilters , ActiveSprint]);
 
   const handleDragEnd = async (event) => {
     const { active, over } = event;
-    console.log(event, "event");
     if (!over) return;
     const taskId = active.id;
     const newStatus = over.data?.current?.columnId;
@@ -204,19 +245,14 @@ function TaskPage() {
           />
         </div>
         <div style={{ display: "flex", flexDirection: "row", gap: 20 }}>
-          <Select
-            options={workItemOptions}
-            placeholder="+ New Work Item"
-            onChange={handleWorkItemChange}
-            classNamePrefix="react-select"
-            styles={{
-              container: (base) => ({
-                ...base,
-                width: 200,
-                zIndex: 9,
-              }),
-            }}
-          />
+          <Button
+            onClick={() =>
+              handleWorkItemChange({ label: "Story", value: "story" }, null)
+            }
+            className="add-btn"
+          >
+            + Add Story
+          </Button>
           <button
             style={{
               border: "none",
@@ -236,16 +272,17 @@ function TaskPage() {
           </button>
         </div>
       </div>
-      <Addtask
-        editModeldata={editModeldata}
-        seteditModelData={seteditModelData}
-        clickedStory={clickedStory}
-        selectedWorkType={selectedWorkType?.value}
-        SprintOption={SprintOption}
-        ActiveSprint={ActiveSprint}
-        openTaskModel={openTaskModel}
-        setTaskModel={setTaskModel}
-      />
+      <div
+        style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}
+      >
+        {" "}
+        <FilterComponent
+          columns={columns}
+          stories={stories}
+          onFilterChange={setActiveFilters}
+          userList={userList}
+        />
+      </div>
       <KanbanBoard
         stories={stories}
         columns={columns}
@@ -255,6 +292,17 @@ function TaskPage() {
       <StageColumns
         openAddForm={stageColumnModel}
         setOpenAddForm={setStageColumnMOdel}
+      />
+      <Addtask
+        editModeldata={editModeldata}
+        seteditModelData={seteditModelData}
+        clickedStory={clickedStory}
+        selectedWorkType={selectedWorkType?.value}
+        SprintOption={SprintOption}
+        ActiveSprint={ActiveSprint}
+        openTaskModel={openTaskModel}
+        setTaskModel={setTaskModel}
+        userList={userList}
       />
     </div>
   );
