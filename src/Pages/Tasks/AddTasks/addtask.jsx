@@ -200,18 +200,20 @@ function AddTask({
   seteditModelData,
   userList,
 }) {
-
   const api = useApi();
   const dispatch = useDispatch();
   const { SprintListItem } = useSelector((s) => s.SprintListPAge);
 
-
   const [assignOptions, setAssignOptions] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
-  const [columns, setColumns] = useState([]); // kanban columns from API
+  const [columns, setColumns] = useState([]);
   const [comment, setComment] = useState("");
   const [reRenderTag, setReRenderTag] = useState(false);
+  const [activeTab, setActiveTab] = useState("Details");
 
+  const handleShowDetails = (item) => {
+    setActiveTab(item);
+  };
   const meta = WORK_TYPE_META[selectedWorkType] ?? WORK_TYPE_META.task;
   const isStory =
     selectedWorkType === "story" || selectedWorkType === "edit_story";
@@ -339,13 +341,11 @@ function AddTask({
     }
   };
 
-
   const toggle = () => {
     reset();
     setComment("");
     setTaskModel(false);
   };
-
 
   const onSubmit = async (data) => {
     try {
@@ -394,7 +394,14 @@ function AddTask({
 
   return (
     <Fragment>
-      <Modal isOpen={openTaskModel} toggle={toggle} size="xl" centered backdrop>
+      <Modal
+        isOpen={openTaskModel}
+        toggle={toggle}
+        size="xl"
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
         <ModalHeader
           toggle={toggle}
           style={{ padding: "16px 24px", borderBottom: "1px solid #e5e7eb" }}
@@ -481,16 +488,88 @@ function AddTask({
                     )}
                   />
                 </div>
-                <div style={s.card}>
-                  <div style={s.cardTitle}>Description</div>
-                  <Controller
-                    name="description"
-                    control={control}
-                    render={({ field }) => (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "20px",
+                    borderBottom: "1px solid #e5e7eb",
+                    marginBottom: "12px",
+                  }}
+                >
+                  {["Details", "Attachment"].map((item) => {
+                    const isActive = activeTab === item;
+
+                    return (
+                      <button
+                        type="button"
+                        key={item}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShowDetails(item);
+                        }}
+                        style={{
+                          position: "relative",
+                          border: "none",
+                          background: "transparent",
+                          padding: "8px 2px",
+                          fontSize: "14px",
+                          fontWeight: isActive ? "600" : "500",
+                          cursor: "pointer",
+                          color: isActive ? "#2563eb" : "#6b7280",
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        {item}
+
+                        {/* 🔥 Animated underline */}
+                        <span
+                          style={{
+                            position: "absolute",
+                            bottom: "-1px",
+                            left: 0,
+                            height: "2px",
+                            width: isActive ? "100%" : "0%",
+                            background: "#2563eb",
+                            transition: "width 0.25s ease",
+                          }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+                {activeTab == "Details" && (
+                  <>
+                    <div style={s.card}>
+                      <div style={s.cardTitle}>Description</div>
+                      <Controller
+                        name="description"
+                        control={control}
+                        render={({ field }) => (
+                          <textarea
+                            {...field}
+                            rows={5}
+                            placeholder="Describe this work item..."
+                            style={{
+                              ...s.input,
+                              resize: "vertical",
+                              fontFamily: "inherit",
+                              lineHeight: 1.6,
+                            }}
+                            onFocus={focusStyle}
+                            onBlur={blurStyle}
+                          />
+                        )}
+                      />
+                    </div>
+
+                    <div style={s.card}>
+                      <div style={s.cardTitle}>Discussion</div>
                       <textarea
-                        {...field}
-                        rows={5}
-                        placeholder="Describe this work item..."
+                        rows={3}
+                        placeholder="Add a comment..."
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
                         style={{
                           ...s.input,
                           resize: "vertical",
@@ -500,33 +579,21 @@ function AddTask({
                         onFocus={focusStyle}
                         onBlur={blurStyle}
                       />
-                    )}
-                  />
-                </div>
+                    </div>
+                  </>
+                )}
 
-                {/* Discussion */}
-                <div style={s.card}>
-                  <div style={s.cardTitle}>Discussion</div>
-                  <textarea
-                    rows={3}
-                    placeholder="Add a comment..."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    style={{
-                      ...s.input,
-                      resize: "vertical",
-                      fontFamily: "inherit",
-                      lineHeight: 1.6,
-                    }}
-                    onFocus={focusStyle}
-                    onBlur={blurStyle}
-                  />
-                </div>
+                {activeTab === "Attachment" && (
+                  <div style={s.card}>
+                    <div style={s.cardTitle}>Attachments</div>
+                    <p style={{ fontSize: "13px", color: "#6b7280" }}>
+                      Upload or view attachments here
+                    </p>
+                  </div>
+                )}
               </Col>
 
-              {/* ════ RIGHT ════ */}
               <Col md={4}>
-                {/* Classification */}
                 <div style={s.card}>
                   <div style={s.cardTitle}>Classification</div>
 

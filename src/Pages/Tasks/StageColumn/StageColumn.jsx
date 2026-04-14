@@ -21,7 +21,7 @@ const bugStages = [
   { label: "Resolved", value: "resolved" },
   { label: "Closed", value: "closed" },
   { label: "Live", value: "live" },
-];
+]
 
 const taskStages = [
   { label: "New", value: "new" },
@@ -44,49 +44,57 @@ function CustomizeColumns({ openAddForm, setOpenAddForm }) {
   const [counter, setCounter] = useState(columns?.length || 1);
   const getId = (col) => col._id || col.key;
 
-  useEffect(() => {
-    const kanbanColumns = async () => {
-      try {
-        const res = await api.getkanbancolumn();
-
-        let data = res?.data?.data?.data || [];
-
-        data = data.map((item, index) => ({
-          ...item,
-          key: item._id || `col_${index}`,
-        }));
-
-        if (data.length === 0) {
-          data = [
-            {
-              key: "col_1",
-              columnName: "New",
-              bugState: "New",
-              taskState: "New",
-            },
-          ];
-        }
-
-        setColumns(data);
-        setSelectedKey(getId(data[0]));
-      } catch (error) {
-        console.error("Error fetching kanban columns:", error);
-
-        const fallback = [
+ useEffect(() => {
+  const kanbanColumns = async () => {
+    try {
+      const res = await api.getkanbancolumn();
+      let data = res?.data?.data?.data || [];
+      const stageOrder = {
+        New: 1,
+        in_progress: 2,
+        qa: 3,
+        done: 4,
+        live: 5,
+        closed: 6,
+      };
+      data = data.map((item, index) => ({
+        ...item,
+        key: item._id || `col_${index}`,
+        bugState: item.bugStage?.toLowerCase(),
+        taskState: item.taskStage?.toLowerCase(),
+      }));
+      data.sort((a, b) => {
+        const orderA = stageOrder[a.taskStage] || 999;
+        const orderB = stageOrder[b.taskStage] || 999;
+        return orderA - orderB;
+      });
+      if (data.length === 0) {
+        data = [
           {
             key: "col_1",
             columnName: "New",
+            taskStage: "New",
             bugState: "New",
-            taskState: "New",
           },
         ];
-
-        setColumns(fallback);
       }
-    };
-
-    kanbanColumns();
-  }, []);
+      setColumns(data);
+      setSelectedKey(getId(data[0]));
+    } catch (error) {
+      console.error("Error fetching kanban columns:", error);
+      const fallback = [
+        {
+          key: "col_1",
+          columnName: "New",
+          taskStage: "New",
+          bugState: "New",
+        },
+      ];
+      setColumns(fallback);
+    }
+  };
+  kanbanColumns();
+}, []);
 
   useEffect(() => {
     if (columns.length > 0 && !selectedKey) {

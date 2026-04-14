@@ -16,6 +16,8 @@ function TaskPage() {
   const dispatch = useDispatch();
 
   const { SprintListItem } = useSelector((state) => state.SprintListPAge);
+  console.log(SprintListItem,"SprintListItem");
+  
   const { currentUser } = useSelector((state) => state.userListPage);
   const [stageColumnModel, setStageColumnMOdel] = useState(false);
 
@@ -33,18 +35,37 @@ function TaskPage() {
     };
   });
 
-  useEffect(() => {
-    const kanbanColumns = async () => {
-      try {
-        const res = await api.getkanbancolumn();
-        let data = res?.data?.data?.data || [];
-        setColumns(data);
-      } catch (error) {
-        console.error("Error fetching kanban columns:", error);
+ useEffect(() => {
+  const kanbanColumns = async () => {
+    try {
+      const res = await api.getkanbancolumn();
+      let data = res?.data?.data?.data || [];
+      const stageOrder = {
+        New: 1,
+        in_progress: 2,
+        qa: 3,
+        done: 4,
+        live: 5,
+        closed: 6,
+      };
+      data = data.map((item, index) => ({
+        ...item,
+        key: item._id || `col_${index}`,
+        bugState: item.bugStage?.toLowerCase(),
+        taskState: item.taskStage?.toLowerCase(),
+      }));
+      data.sort((a, b) => {
+        const orderA = stageOrder[a.taskStage] || 999;
+        const orderB = stageOrder[b.taskStage] || 999;
+        return orderA - orderB;
+      });
+      setColumns(data);
+    } catch (error) {
+      console.error("Error fetching kanban columns:", error);
       }
-    };
-    kanbanColumns();
-  }, []);
+  };
+  kanbanColumns();
+}, []);
 
   useEffect(() => {
     const getAllUserlist = async () => {
@@ -292,6 +313,7 @@ function TaskPage() {
       <StageColumns
         openAddForm={stageColumnModel}
         setOpenAddForm={setStageColumnMOdel}
+        columns={columns}
       />
       <Addtask
         editModeldata={editModeldata}
