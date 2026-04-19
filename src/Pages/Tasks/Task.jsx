@@ -325,6 +325,7 @@ function TaskPage() {
         openTaskModel={openTaskModel}
         setTaskModel={setTaskModel}
         userList={userList}
+        setRerender={setRerender}
       />
     </div>
   );

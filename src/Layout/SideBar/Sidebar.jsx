@@ -68,7 +68,7 @@ export default function Sidebar() {
             onClick={() => navigate("/projects")}
           >
             <FaExchangeAlt size={18} />
-            <span className="nav-text">Change project</span>
+            <span className="nav-text">Admin section</span>
           </div>
         )}
       </div>

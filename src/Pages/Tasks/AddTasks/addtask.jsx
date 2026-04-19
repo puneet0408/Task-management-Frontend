@@ -1,4 +1,5 @@
-import React, { Fragment, useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect, useRef } from "react";
+import axios from "axios";
 import {
   Modal,
   ModalHeader,
@@ -26,9 +27,9 @@ const schema = yup.object({
   title: yup.string().required("Task title is required"),
   taskStatus: yup.string().required("Status is required"),
   priority: yup.string().required("Priority is required"),
-  originalEstimate: yup.number().min(0).typeError("Must be a number"),
-  remainingTime: yup.number().min(0).typeError("Must be a number"),
-  completedTime: yup.number().min(0).typeError("Must be a number"),
+  originalTIme: yup.number().min(0).typeError("Must be a number"),
+  RemainingTIme: yup.number().min(0).typeError("Must be a number"),
+  CompleteTIme: yup.number().min(0).typeError("Must be a number"),
 });
 
 /* ── React-Select shared styles ─────────────────────────── */
@@ -188,6 +189,73 @@ const s = {
     color: "#9ca3af",
     marginBottom: "4px",
   },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "12px",
+  },
+  uploadBtn: {
+    background: "#2563eb",
+    color: "#fff",
+    border: "none",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
+  dropZone: {
+    border: "2px dashed #d1d5db",
+    borderRadius: "8px",
+    padding: "20px",
+    textAlign: "center",
+    marginBottom: "12px",
+    cursor: "pointer",
+  },
+  fileList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+  },
+  fileItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "10px",
+    border: "1px solid #e5e7eb",
+    borderRadius: "6px",
+  },
+  fileInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+  },
+  fileIcon: {
+    fontSize: "18px",
+  },
+  fileName: {
+    fontSize: "14px",
+    fontWeight: 500,
+  },
+  fileSize: {
+    fontSize: "12px",
+    color: "#6b7280",
+  },
+  actions: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+  },
+  uploading: {
+    fontSize: "12px",
+    color: "#f59e0b",
+  },
+  removeBtn: {
+    border: "none",
+    background: "transparent",
+    cursor: "pointer",
+    color: "#ef4444",
+    fontSize: "16px",
+  },
 };
 
 /* ════════════════════════════════════════════════════════ */
@@ -199,7 +267,11 @@ function AddTask({
   editModeldata,
   seteditModelData,
   userList,
+  setRerender,
 }) {
+
+  console.log(editModeldata,"editModeldata");
+  
   const api = useApi();
   const dispatch = useDispatch();
   const { SprintListItem } = useSelector((s) => s.SprintListPAge);
@@ -210,6 +282,77 @@ function AddTask({
   const [comment, setComment] = useState("");
   const [reRenderTag, setReRenderTag] = useState(false);
   const [activeTab, setActiveTab] = useState("Details");
+  const [attachment, setAttachments] = useState([]);
+  const [files, setFiles] = useState([]);
+  const [previewFile, setPreviewFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const fileInputRef = useRef();
+  const handleUpload = async (filesToUpload) => {
+     setIsUploading(true); 
+    try {
+      const uploadedUrls = [];
+
+      for (const item of filesToUpload) {
+        // mark as uploading
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.name === item.name ? { ...f, uploading: true } : f
+          )
+        );
+
+        const res = await api.awsmediaupoader({
+          fileName: item.name,
+          fileType: item.type,
+        });
+        const { uploadUrl, fileUrl } = res.data;
+
+        await axios.put(uploadUrl, item.file, {
+          headers: { "Content-Type": item.type },
+        });
+
+        // mark as done
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.name === item.name
+              ? { ...f, uploading: false, uploaded: true, url: fileUrl }
+              : f
+          )
+        );
+
+        uploadedUrls.push({ name: item.name, type: item.type, url: fileUrl });
+      }
+
+      return uploadedUrls;
+    } catch (error) {
+      console.error("Full error:", error.response?.data);
+      console.error("Status:", error.response?.status);
+    }finally {
+    setIsUploading(false);  
+  }
+  };
+  const handleFileChange = async (e) => {
+    const selectedFiles = Array.from(e.target.files).map((file) => ({
+      file,
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      uploading: false,
+      uploaded: false,
+    }));
+
+    setFiles((prev) => [...prev, ...selectedFiles]);
+    const uploadedUrls = await handleUpload(selectedFiles);
+    if (uploadedUrls) setAttachments((prev) => [...prev, ...uploadedUrls]);
+    e.target.value = null;
+  };
+
+  // ✅ UPDATED: syncs both files and attachments state
+  const removeFile = (index) => {
+    const removed = files[index];
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setAttachments((prev) => prev.filter((a) => a.name !== removed.name));
+  };
 
   const handleShowDetails = (item) => {
     setActiveTab(item);
@@ -228,14 +371,15 @@ function AddTask({
     defaultValues: {
       title: "",
       description: "",
+      attachment: [],
       assignedTo: null,
       taskStatus: "",
       priority: "2",
       sprintId: "",
       tags: [],
-      originalEstimate: 0,
-      remainingTime: 0,
-      completedTime: 0,
+      originalTIme: 0,
+      RemainingTIme: 0,
+      CompleteTIme: 0,
     },
   });
 
@@ -261,16 +405,32 @@ function AddTask({
     reset({
       title: editModeldata?.title || "",
       description: editModeldata?.description || "",
+      attachment: editModeldata?.attachment || "",
       priority: editModeldata?.priority || "2",
       sprintId: editModeldata?.sprintId || "",
       tags: editTags,
-      originalEstimate: editModeldata?.originalEstimate || 0,
-      remainingTime: editModeldata?.remainingTime || 0,
-      completedTime: editModeldata?.completedTime || 0,
+      originalTIme: editModeldata?.originalTIme || 0,
+      RemainingTIme: editModeldata?.RemainingTIme || 0,
+      CompleteTIme: editModeldata?.CompleteTIme || 0,
       assignedTo:
         editModeldata?.assignedTo?._id || editModeldata?.assignedTo || null,
       taskStatus: editModeldata?.taskStatus || "",
     });
+
+    // ✅ NEW: prefill files from saved attachments
+    if (editModeldata?.attachment?.length) {
+      setFiles(
+        editModeldata.attachment.map((a) => ({
+          name: a.name,
+          type: a.type,
+          size: null,
+          uploaded: true,
+          uploading: false,
+          url: a.url,
+        }))
+      );
+      setAttachments(editModeldata.attachment);
+    }
   }, [editModeldata, tagOptions.length]);
   useEffect(() => {
     const kanbanColumns = async () => {
@@ -344,15 +504,26 @@ function AddTask({
   const toggle = () => {
     reset();
     setComment("");
+    setFiles([]);
+    setAttachments([]);
+    setPreviewFile(null);
     setTaskModel(false);
   };
 
   const onSubmit = async (data) => {
+    console.log(data,"data");
+
+    
     try {
       const commonData = {
         ...data,
-        assignedTo: data.assignedTo?.value || null,
+        assignedTo: data.assignedTo || null,
         tags: data.tags,
+        attachment: attachment,
+        originalTIme:data.originalTIme,
+        RemainingTIme:data?.RemainingTIme,
+        CompleteTIme:data?.CompleteTIme,
+        comment: comment || undefined,
       };
 
       let res;
@@ -362,7 +533,6 @@ function AddTask({
         const updatePayload = {
           ...commonData,
           type: cleanType,
-          comment: comment || undefined,
         };
 
         res = await api.updateTask(editModeldata._id, updatePayload);
@@ -374,13 +544,13 @@ function AddTask({
               parentId: clickedStory,
             }),
           type: selectedWorkType,
-          comment: comment || undefined,
         };
 
         res = await api.createTask(createPayload);
       }
 
       if (res.status === 200 || res.status === 201) {
+        setRerender((prev)=>!prev);
         toggle();
         seteditModelData(null);
       }
@@ -521,8 +691,21 @@ function AddTask({
                         }}
                       >
                         {item}
-
-                        {/* 🔥 Animated underline */}
+                        {/* badge count on Attachment tab */}
+                        {item === "Attachment" && files.length > 0 && (
+                          <span style={{
+                            marginLeft: 5,
+                            fontSize: 10,
+                            fontWeight: 600,
+                            background: "#2563eb",
+                            color: "#fff",
+                            borderRadius: 999,
+                            padding: "1px 6px",
+                          }}>
+                            {files.length}
+                          </span>
+                        )}
+                        {/* animated underline */}
                         <span
                           style={{
                             position: "absolute",
@@ -538,7 +721,8 @@ function AddTask({
                     );
                   })}
                 </div>
-                {activeTab == "Details" && (
+
+                {activeTab === "Details" && (
                   <>
                     <div style={s.card}>
                       <div style={s.cardTitle}>Description</div>
@@ -585,10 +769,116 @@ function AddTask({
 
                 {activeTab === "Attachment" && (
                   <div style={s.card}>
-                    <div style={s.cardTitle}>Attachments</div>
-                    <p style={{ fontSize: "13px", color: "#6b7280" }}>
-                      Upload or view attachments here
-                    </p>
+                    {/* Header */}
+                    <div style={s.header}>
+                      <div style={s.cardTitle}>Attachments</div>
+                      <button
+                        type="button"
+                        style={s.uploadBtn}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        + Upload
+                      </button>
+                    </div>
+                    <input
+                      type="file"
+                      multiple
+                      ref={fileInputRef}
+                      style={{ display: "none" }}
+                      onChange={handleFileChange}
+                    />
+                    {files.length === 0 && (
+                      <div style={{ textAlign: "center", padding: "24px", color: "#9ca3af", fontSize: "13px" }}>
+                        No attachments yet. Click Upload to add files.
+                      </div>
+                    )}
+                    {files.length > 0 && (
+                      <div style={{
+                        ...s.fileList,
+                        maxHeight: files.length > 3 ? "198px" : "auto",
+                        overflowY: files.length > 3 ? "auto" : "visible",
+                        paddingRight: files.length > 3 ? "4px" : "0",
+                      }}>
+                        {files.map((file, index) => {
+                          const isImage = file.type?.startsWith("image/");
+                          const icon = isImage
+                            ? "🖼"
+                            : file.type === "application/pdf"
+                            ? "📄"
+                            : "📝";
+
+                          return (
+                            <div
+                              key={index}
+                              style={{
+                                ...s.fileItem,
+                                cursor: file.uploaded ? "pointer" : "default",
+                              }}
+                              onClick={() => file.uploaded && setPreviewFile(file)}
+                            >
+                              <div style={s.fileInfo}>
+                                <div style={{
+                                  width: 32,
+                                  height: 32,
+                                  borderRadius: 6,
+                                  background: isImage ? "#eff6ff" : "#fef2f2",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontSize: 14,
+                                }}>
+                                  {icon}
+                                </div>
+                                <div>
+                                  <div style={s.fileName}>{file.name}</div>
+                                  <div style={s.fileSize}>
+                                    {file.size ? `${(file.size / 1024).toFixed(1)} KB · ` : ""}
+                                    {file.uploading
+                                      ? "Uploading..."
+                                      : file.uploaded
+                                      ? "Uploaded"
+                                      : "Pending"}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div
+                                style={s.actions}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {file.uploading ? (
+                                  <span style={{
+                                    fontSize: 11,
+                                    background: "#fef9c3",
+                                    color: "#854d0e",
+                                    padding: "2px 8px",
+                                    borderRadius: 999,
+                                  }}>
+                                    uploading
+                                  </span>
+                                ) : file.uploaded ? (
+                                  <span style={{
+                                    fontSize: 11,
+                                    background: "#dcfce7",
+                                    color: "#166534",
+                                    padding: "2px 8px",
+                                    borderRadius: 999,
+                                  }}>
+                                    ✓ done
+                                  </span>
+                                ) : null}
+                                <button
+                                  onClick={() => removeFile(index)}
+                                  style={s.removeBtn}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </Col>
@@ -714,9 +1004,9 @@ function AddTask({
                     <div style={s.cardTitle}>Time Tracking</div>
                     <div style={s.timeRow}>
                       {[
-                        { name: "originalEstimate", label: "Original (hrs)" },
-                        { name: "remainingTime", label: "Remaining (hrs)" },
-                        { name: "completedTime", label: "Completed (hrs)" },
+                        { name: "originalTIme", label: "Original (hrs)" },
+                        { name: "RemainingTIme", label: "Remaining (hrs)" },
+                        { name: "CompleteTIme", label: "Completed (hrs)" },
                       ].map(({ name, label }) => (
                         <div key={name} style={s.timeBox}>
                           <div style={s.timeLabel}>{label}</div>
@@ -777,7 +1067,7 @@ function AddTask({
           <Button
             color="primary"
             onClick={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isUploading}
             style={{ fontSize: "13px", padding: "7px 20px", fontWeight: 600 }}
           >
             {isSubmitting ? (
@@ -794,6 +1084,85 @@ function AddTask({
           </Button>
         </ModalFooter>
       </Modal>
+      {previewFile && (
+        <div
+          onClick={() => setPreviewFile(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.65)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              borderRadius: 12,
+              padding: 20,
+              width: 520,
+              maxWidth: "90vw",
+              position: "relative",
+            }}
+          >
+            {/* header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "#111827", wordBreak: "break-all" }}>
+                {previewFile.name}
+              </span>
+              <button
+                onClick={() => setPreviewFile(null)}
+                style={{ border: "none", background: "transparent", fontSize: 22, cursor: "pointer", color: "#6b7280", marginLeft: 10 }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* body */}
+            <div style={{ borderRadius: 8, overflow: "hidden", background: "#f9fafb", minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {previewFile.type?.startsWith("image/") ? (
+                <img
+                  src={previewFile.url}
+                  alt={previewFile.name}
+                  style={{ maxWidth: "100%", maxHeight: 400, objectFit: "contain" }}
+                />
+              ) : previewFile.type === "application/pdf" ? (
+                <iframe
+                  src={previewFile.url}
+                  title={previewFile.name}
+                  style={{ width: "100%", height: 400, border: "none" }}
+                />
+              ) : (
+                <div style={{ textAlign: "center", padding: 40, color: "#6b7280" }}>
+                  <div style={{ fontSize: 40, marginBottom: 8 }}>📎</div>
+                  <div style={{ fontSize: 13 }}>Preview not available for this file type</div>
+                </div>
+              )}
+            </div>
+
+            {/* footer */}
+            <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <a
+                href={previewFile.url}
+                target="_blank"
+                rel="noreferrer"
+                style={{ fontSize: 13, color: "#2563eb", padding: "6px 14px", border: "1px solid #e5e7eb", borderRadius: 6, textDecoration: "none" }}
+              >
+                Open original
+              </a>
+              <button
+                onClick={() => setPreviewFile(null)}
+                style={{ fontSize: 13, padding: "6px 14px", border: "1px solid #e5e7eb", borderRadius: 6, background: "transparent", cursor: "pointer" }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Fragment>
   );
 }

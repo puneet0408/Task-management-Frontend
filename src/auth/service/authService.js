@@ -210,4 +210,9 @@ export default class AuthService {
       withCredentials: true,
     });
   }
+  awsmediaupoader(data){
+    return axios.post(`${apiConfig.mediauploaderaws}`,data,{
+      withCredentials:true,
+    })
+  }
 }
