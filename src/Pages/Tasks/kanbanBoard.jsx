@@ -192,7 +192,7 @@ export default function KanbanBoard({
                       </div>
                       <div
                         onClick={() =>
-                          handleWorkItemChange({ value: "task" }, story)
+                          handleWorkItemChange({ value: "task" , isedit:false }, story)
                         }
                         style={menuItemStyle}
                       >
@@ -200,7 +200,7 @@ export default function KanbanBoard({
                       </div>
                       <div
                         onClick={() =>
-                          handleWorkItemChange({ value: "bug" }, story)
+                          handleWorkItemChange({ value: "bug" , isedit:false }, story)
                         }
                         style={menuItemStyle}
                       >

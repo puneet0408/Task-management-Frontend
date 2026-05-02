@@ -15,4 +15,5 @@ export default {
   curdTagEndpoint: "/api/auth/v1/tag",
   curdkanbanTaskColumn: "/api/auth/vi/kanbancolumn",
   mediauploaderaws : "/api/auth/v1/mediauploader",
+  taskActivityEndpont :"/api/auth/v1/taskActivity",
 };

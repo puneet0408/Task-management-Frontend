@@ -113,11 +113,18 @@ function TaskPage() {
   });
 
   const handleWorkItemChange = (option, data = {}) => {
+    console.log(option , data , "action");
+    
     if (option.value == "edit_story") {
       seteditModelData(data);
     } else if (option.value == "task" || option.value == "bug") {
-      seteditModelData(data);
+      if(option.isedit){
+  seteditModelData(data);
+      }else{
+          seteditModelData({});
+      }
     } else {
+      seteditModelData({});
       if (data?.storyId) {
         setClickedStory(data?.storyId);
       }

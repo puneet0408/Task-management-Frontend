@@ -54,7 +54,7 @@ export default function TaskCard({ task, handleWorkItemChange }) {
   const handleCardClick = (e) => {
     e.stopPropagation();
     if (isDragging) return;
-    handleWorkItemChange({ value: task?.type }, task);
+    handleWorkItemChange({ value: task?.type , isedit:true }, task);
   };
 
   return (
@@ -152,7 +152,7 @@ export default function TaskCard({ task, handleWorkItemChange }) {
                   style={{ padding: "8px 12px", cursor: "pointer" }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleWorkItemChange({ value: task?.type }, task);
+                    handleWorkItemChange({ value: task?.type , isedit:true }, task);
                   }}
                 >
                   View

@@ -29,7 +29,9 @@ export default class AuthService {
   }
 
   getProfile(uuid) {
-    return axios.get(`${apiConfig.curdUsersEndpoint}/${uuid}`, { withCredentials: true });
+    return axios.get(`${apiConfig.curdUsersEndpoint}/${uuid}`, {
+      withCredentials: true,
+    });
   }
 
   getCompany(params = {}) {
@@ -61,7 +63,7 @@ export default class AuthService {
       withCredentials: true,
     });
   }
-    getAllUsers(params = {}) {
+  getAllUsers(params = {}) {
     return axios.get(apiConfig.getallUser, {
       params,
       withCredentials: true,
@@ -132,22 +134,22 @@ export default class AuthService {
       withCredentials: true,
     });
   }
-    MarkDefultProject(uuid) {
+  MarkDefultProject(uuid) {
     return axios.patch(`${apiConfig.markdefaultProject}/${uuid}`, {
       withCredentials: true,
     });
   }
-      MarkDefultSprint(uuid) {
+  MarkDefultSprint(uuid) {
     return axios.patch(`${apiConfig.markdefaultSprint}/${uuid}`, {
       withCredentials: true,
     });
   }
-      MarkLastPreferenceProject(uuid) {
+  MarkLastPreferenceProject(uuid) {
     return axios.patch(`${apiConfig.markLastPreferenceProject}/${uuid}`, {
       withCredentials: true,
     });
   }
-    gettask(params = {}) {
+  gettask(params = {}) {
     return axios.get(apiConfig.curdTaskEndpoint, {
       params,
       withCredentials: true,
@@ -168,7 +170,7 @@ export default class AuthService {
       withCredentials: true,
     });
   }
-     gettagsApi(params = {}) {
+  gettagsApi(params = {}) {
     return axios.get(apiConfig.curdTagEndpoint, {
       params,
       withCredentials: true,
@@ -189,7 +191,7 @@ export default class AuthService {
       withCredentials: true,
     });
   }
-    getkanbancolumn(params = {}) {
+  getkanbancolumn(params = {}) {
     return axios.get(apiConfig.curdkanbanTaskColumn, {
       params,
       withCredentials: true,
@@ -210,9 +212,28 @@ export default class AuthService {
       withCredentials: true,
     });
   }
-  awsmediaupoader(data){
-    return axios.post(`${apiConfig.mediauploaderaws}`,data,{
-      withCredentials:true,
-    })
+  awsmediaupoader(data) {
+    return axios.post(`${apiConfig.mediauploaderaws}`, data, {
+      withCredentials: true,
+    });
+  }
+
+  getPresignedViewUrl({ key }) {
+    return axios.get(`${apiConfig.mediauploaderaws}/${key}`, {
+      withCredentials: true,
+    });
+  }
+
+  createTaskActivity(data) {
+    return axios.post(apiConfig.taskActivityEndpont, data, {
+      withCredentials: true,
+    });
+  }
+
+  getTaskActivity(params = {}) {
+    return axios.get(apiConfig.taskActivityEndpont, {
+      params,
+      withCredentials: true,
+    });
   }
 }
