@@ -16,7 +16,6 @@ function TaskPage() {
   const dispatch = useDispatch();
 
   const { SprintListItem } = useSelector((state) => state.SprintListPAge);
-  console.log(SprintListItem,"SprintListItem");
   
   const { currentUser } = useSelector((state) => state.userListPage);
   const [stageColumnModel, setStageColumnMOdel] = useState(false);
@@ -113,7 +112,6 @@ function TaskPage() {
   });
 
   const handleWorkItemChange = (option, data = {}) => {
-    console.log(option , data , "action");
     
     if (option.value == "edit_story") {
       seteditModelData(data);
