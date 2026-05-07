@@ -270,6 +270,7 @@ function AddTask({
   userList,
   setRerender,
 }) {
+console.log(clickedStory,"clickedStory");
 
   const api = useApi();
   const dispatch = useDispatch();
@@ -646,9 +647,12 @@ function AddTask({
         res = await api.createTask(createPayload);
       }
       if (res.status === 200 || res.status === 201) {
-        const taskId = res?.data?.data?.updateData?._id;
+        console.log(res,"res");
+        const updatetaskId = res?.data?.data?.updateData?._id;
+        const taskId = res?.data?.task?._id;
+        
         const activityPayload = {
-          taskId: taskId,
+          taskId: editModeldata._id ? updatetaskId : taskId,
           action: editModeldata._id ? "update" : "create",
           changes: currentChanges,
         };

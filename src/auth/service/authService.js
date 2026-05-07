@@ -236,4 +236,13 @@ export default class AuthService {
       withCredentials: true,
     });
   }
+
+  
+  dashboardSummaryWidget(params = {}) {
+    console.log(params,"params");
+    return axios.get(apiConfig.dashboardSummaryWidget, {
+      params,
+      withCredentials: true,
+    });
+  }
 }

@@ -16,4 +16,5 @@ export default {
   curdkanbanTaskColumn: "/api/auth/vi/kanbancolumn",
   mediauploaderaws : "/api/auth/v1/mediauploader",
   taskActivityEndpont :"/api/auth/v1/taskActivity",
+  dashboardSummaryWidget :"/api/auth/vi/dashboard/summary"
 };

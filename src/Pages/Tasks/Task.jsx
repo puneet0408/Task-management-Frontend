@@ -80,6 +80,8 @@ function TaskPage() {
   }, []);
 
   const [stories, setStories] = useState([]);
+  console.log(stories,"stories");
+  
 
   useEffect(() => {
     const optiondata = SprintListItem.map((sprint) => ({
@@ -101,6 +103,8 @@ function TaskPage() {
   ];
   const [selectedWorkType, setSelectedWorkType] = useState(null);
   const [clickedStory, setClickedStory] = useState("");
+  console.log(clickedStory,"clickedStorytask");
+  
   const [editModeldata, seteditModelData] = useState(false);
   const [rerender, setRerender] = useState(false);
 
@@ -112,10 +116,14 @@ function TaskPage() {
   });
 
   const handleWorkItemChange = (option, data = {}) => {
+    console.log(data?.storyId,"storyId");
+    console.log(option,"option");
+    
     
     if (option.value == "edit_story") {
       seteditModelData(data);
     } else if (option.value == "task" || option.value == "bug") {
+       setClickedStory(data?.storyId);
       if(option.isedit){
   seteditModelData(data);
       }else{
@@ -164,6 +172,8 @@ function TaskPage() {
       }
       const response = await api.gettask(payload);
       const data = response?.data?.data || [];
+      console.log(data,"data");
+      
       const storiesMap = {};
       data.forEach((item) => {
         if (item.type === "story") {
