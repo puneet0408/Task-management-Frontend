@@ -16,11 +16,8 @@ function Dashboard() {
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.userListPage);
   const { SprintListItem } = useSelector((state) => state.SprintListPAge);
-
   const [SprintOption, setSprintOption] = useState([]);
   const [summaryWidgetData, SummarywidgetData] = useState(null);
-  console.log(summaryWidgetData, "summaryWidgetData");
-
   const [ActiveSprint, setActiveSprint] = useState(() => {
     const stored = localStorage.getItem("userData");
     const userData = stored ? JSON.parse(stored) : {};
@@ -29,11 +26,9 @@ function Dashboard() {
       value: userData?.preferences?.Activesprint?.sprintId,
     };
   });
-
   useEffect(() => {
     dispatch(fetchSprintData());
   }, []);
-
   useEffect(() => {
     const optiondata = SprintListItem.map((sprint) => ({
       label: sprint?.sprintName,
@@ -45,24 +40,19 @@ function Dashboard() {
     if (!ActiveSprint?.value) return;
     const fetchWidget = async () => {
       try {
-        const response = await api.dashboardSummaryWidget({
+        const response = await api.dashboardempSummaryWidget({
           sprintId: ActiveSprint.value,
         });
-        console.log(response, "responseresponse");
-
         SummarywidgetData(response.data.data);
       } catch (err) {
         console.error(err);
       }
     };
-
     fetchWidget();
   }, [ActiveSprint?.value]);
-
   const handleSprintChange = (selectedOption) => {
     setActiveSprint(selectedOption);
   };
-
   return (
     <>
       <div
@@ -72,7 +62,8 @@ function Dashboard() {
           justifyContent: "space-between",
         }}
       >
-        <p>Dashboard - {currentUser?.company?.company_name}</p>
+      <p></p>
+        {/* <p>Dashboard - {currentUser?.company?.company_name}</p> */}
         <span>
           <Select
             options={SprintOption}
@@ -84,27 +75,20 @@ function Dashboard() {
         </span>
       </div>
       <hr />
-
       <SummaryWidgets summaryWidgetData={summaryWidgetData?.summary[0]} />
       <div style={styles.widgetsGrid}>
         <TaskByType data={summaryWidgetData?.typeStats} />
-
         <PriorityBreakdown data={summaryWidgetData?.priorityStats} />
-
         <BugRateWidget data={summaryWidgetData?.BugRateWidget || []} />
       </div>
         <div style={styles.widgetsGrid}>
         <TeamWorkloadChart data={summaryWidgetData?.assigneeStats} />
-
         <TeamStatusChart data={summaryWidgetData?.assigneeStats} />
-
         <TypeWIzeTaskCountofUsers data={summaryWidgetData?.assigneeStats || []} />
       </div>
-      
     </>
   );
 }
-
 export default Dashboard;
 const styles = {
   widgetsGrid: {

@@ -18,6 +18,10 @@ import Company from "./Pages/Company/Company";
 import UserPage from "./Pages/Users/users";
 import Project from "./Pages/Project/Project";
 import SprintPage from "./Pages/Sprint/sprint";
+import AdminDashboard from "./Pages/AdminDasgboard/AdminDashboard";
+import SuperAdminDashboard from "./Pages/SuperAdminDashboard/SuperAdminDashboard";
+import ProjectSummary from "./Pages/SummaryPage/ProjectSummary";
+import Permission from "./Pages/Permission/Permission";
 import Task from "./Pages/Tasks/task";
 export default function App() {
   return (
@@ -40,6 +44,9 @@ export default function App() {
             <Route path="company" element={<Company />} />
             <Route path="users" element={<UserPage />} />
             <Route path="projects" element={<Project />} />
+            <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
+            <Route path="admin-dashboard" element={<AdminDashboard />} />
+             <Route path="permission" element={<Permission />} />
           </Route>
 
           <Route path=":companySlug/:projectId" element={<Layout />}>
@@ -47,6 +54,8 @@ export default function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="tasks" element={<Task/>} />
             <Route path="sprint" element={<SprintPage />} />
+             <Route path="summary" element={<ProjectSummary />} />
+
           </Route>
         </Route>
 

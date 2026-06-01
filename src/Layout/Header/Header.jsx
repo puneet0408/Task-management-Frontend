@@ -16,7 +16,7 @@ export default function Header() {
   const api = useApi();
   const role = localStorage.getItem("role") || "Guest";
   const [projectOption, setProjectOption] = useState();
- const { companySlug } = useParams();
+  const { companySlug } = useParams();
   const [selectedProject, setSelectedProject] = useState(null);
   const { currentUser } = useSelector((state) => state.userListPage);
 
@@ -48,9 +48,14 @@ export default function Header() {
   };
 
   useEffect(() => {
-    if (currentUser?.preferences?.activeProject?.projectId && projectOption?.length) {
+    if (
+      currentUser?.preferences?.activeProject?.projectId &&
+      projectOption?.length
+    ) {
       const defaultOption = projectOption.find(
-        (opt) => opt.value === currentUser?.preferences?.activeProject?.projectId || null,
+        (opt) =>
+          opt.value === currentUser?.preferences?.activeProject?.projectId ||
+          null
       );
       setSelectedProject(defaultOption || null);
     }
@@ -109,7 +114,9 @@ export default function Header() {
                 fontSize: "1.25rem",
               }}
             >
-            {companySlug ? currentUser?.company?.company_name :"Task Master "} 
+              {companySlug
+                ? currentUser?.company?.company_name
+                : "Task Master "}
             </h5>
           </div>
           <Nav
@@ -124,15 +131,18 @@ export default function Header() {
               height: "100%",
             }}
           >
-            <span>
-              <Select
-                options={projectOption}
-                value={selectedProject}
-                onChange={handleSelectProject}
-                classNamePrefix="react-select"
-                placeholder="Select Project"
-              />
-            </span>
+            {!role === "superadmin" && (
+              <span>
+                <Select
+                  options={projectOption}
+                  value={selectedProject}
+                  onChange={handleSelectProject}
+                  classNamePrefix="react-select"
+                  placeholder="Select Project"
+                />
+              </span>
+            )}
+
             <span
               style={{
                 fontWeight: "500",

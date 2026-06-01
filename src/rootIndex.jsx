@@ -9,9 +9,14 @@ export default function RootIndexRedirect() {
     (state) => state.userListPage
   );
   useEffect(() => {
-    if (loadingsingle || !currentUser) return;
+    if (loadingsingle) return;
+    if (!currentUser || !currentUser.role) {
+      navigate("/login", { replace: true });
+      return;
+    }
 
-       if (currentUser.role == "superadmin") {
+    console.log(currentUser, "CURRENT USER");
+    if (currentUser.role === "superadmin") {
       navigate("/company", { replace: true });
       return;
     }

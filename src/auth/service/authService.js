@@ -238,9 +238,16 @@ export default class AuthService {
   }
 
   
-  dashboardSummaryWidget(params = {}) {
+  dashboardempSummaryWidget(params = {}) {
     console.log(params,"params");
-    return axios.get(apiConfig.dashboardSummaryWidget, {
+    return axios.get(apiConfig.dashboardempSummaryWidget, {
+      params,
+      withCredentials: true,
+    });
+  }
+    dashboardadminSummaryWidget(params = {}) {
+    console.log(params,"params");
+    return axios.get(apiConfig.dashboardadminSummaryWidget, {
       params,
       withCredentials: true,
     });

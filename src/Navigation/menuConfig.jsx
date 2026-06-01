@@ -4,43 +4,71 @@ const menuConfig = [
     title: "Dashboard",
     path: "dashboard",
     scope: "project",
-    roles: ["superadmin","admin","manager","employee"]
+    roles: ["superadmin", "admin", "manager", "employee"],
+  },
+  {
+    id: "admin-dashboard",
+    title: "Dashboard",
+    path: "admin-dashboard",
+    scope: "company",
+    roles: ["admin", "manager"],
+  },
+    {
+    id: "superadmin-dashboard",
+    title: "Dashboard",
+    path: "superadmin-dashboard",
+    scope: "company",
+    roles: ["superadmin"],
+  },
+  {
+    id: "Summary",
+    title: "Summary",
+    path: "summary",
+    scope: "project",
+    roles: ["admin", "manager", "employee"],
   },
   {
     id: "tasks",
     title: "Tasks",
     path: "tasks",
     scope: "project",
-    roles: ["admin","manager","employee"]
+    roles: ["admin", "manager", "employee"],
   },
   {
     id: "sprint",
     title: "Sprint",
     path: "sprint",
     scope: "project",
-    roles: ["admin","manager"]
+    roles: ["admin", "manager"],
   },
   {
     id: "company",
     title: "Company",
-    path: "/company",
+    path: "company",
     scope: "company",
-    roles: ["superadmin"]
+    roles: ["superadmin"],
   },
   {
     id: "users",
     title: "Users",
-    path: "/users",
+    path: "users",
     scope: "company",
-    roles: ["superadmin","admin","manager"]
+    roles: ["superadmin", "admin", "manager"],
   },
   {
     id: "projects",
     title: "Projects",
-    path: "/projects",
+    path: "projects",
     scope: "company",
-    roles: ["admin","manager"]
-  }
+    roles: ["admin", "manager","employee"],
+  },
+  {
+    id: "permission",
+    title: "Permission",
+    path: "permission",
+    scope: "company",
+    roles: ["admin", "manager"],
+  },
 ];
 
 export default menuConfig;

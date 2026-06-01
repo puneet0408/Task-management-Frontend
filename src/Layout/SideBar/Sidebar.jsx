@@ -34,6 +34,9 @@ export default function Sidebar() {
       if (isProjectScope) return item.scope === "project";
       return item.scope === "company";
     });
+    console.log(allowedMenu,"allowedMenu");
+    console.log(isProjectScope,"isProjectScope");
+    
   return (
     <aside className="app-sidebar">
       <div className="brand">
@@ -47,7 +50,8 @@ export default function Sidebar() {
             const to =
               item.scope === "project"
                 ? `/${companySlug}/${projectId}/${item.path}`
-                : item.path;
+                : `/${item.path}`;
+                
             return (
               <NavLink
                 key={item.id}
@@ -68,7 +72,7 @@ export default function Sidebar() {
             onClick={() => navigate("/projects")}
           >
             <FaExchangeAlt size={18} />
-            <span className="nav-text">Admin section</span>
+            <span className="nav-text">{role == "admin" || role == "manager" }Admin section</span>
           </div>
         )}
       </div>
