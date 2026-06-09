@@ -1,5 +1,5 @@
 // src/components/Layout/Header.js
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Navbar, Nav } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -11,6 +11,11 @@ import Select from "react-select";
 import useApi from "../../auth/service/useApi";
 import { fetchCurrentLogin } from "../../Redux/UserSlice";
 import { toSlug } from "../../Utils/srugs";
+import { socket } from "../../socket/socket";
+import { CiBellOn } from "react-icons/ci";
+import { FaBell } from "react-icons/fa";
+import { Socket } from "socket.io-client";
+import moment from "moment";
 export default function Header() {
   const navigate = useNavigate();
   const api = useApi();
@@ -19,6 +24,13 @@ export default function Header() {
   const { companySlug } = useParams();
   const [selectedProject, setSelectedProject] = useState(null);
   const { currentUser } = useSelector((state) => state.userListPage);
+  const [activebell, setActiveBell] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotification, setShowNotification] = useState(false);
+  const dropdownRef = useRef(null);
+  const companyName = currentUser?.company?.company_name;
+  const projectName = currentUser?.preferences?.activeProject?.projectName;
+  const projectSlug = toSlug(projectName);
 
   const dispatch = useDispatch();
   const { ProjectCardItem } = useSelector((state) => state.Projectcardpage);
@@ -60,6 +72,52 @@ export default function Header() {
       setSelectedProject(defaultOption || null);
     }
   }, [currentUser, projectOption]);
+
+  useEffect(() => {
+    const getNotificationData = async () => {
+      try {
+        const response = await api.getNotification();
+
+        if (response?.status === 200) {
+          setNotifications(response?.data?.notification || []);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    getNotificationData();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowNotification(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser?._id) return;
+    if (!socket.connected) {
+      socket.connect();
+    }
+    socket.emit("joinRoom", currentUser._id);
+  }, [currentUser]);
+
+  useEffect(() => {
+    socket.on("newNotification", (notification) => {
+      setNotifications((prev) => [notification, ...prev]);
+    });
+
+    return () => {
+      socket.off("newNotification");
+    };
+  }, []);
 
   const handleLogout = async () => {
     const api = new AuthService();
@@ -142,7 +200,161 @@ export default function Header() {
                 />
               </span>
             )}
+            <div className="position-relative" ref={dropdownRef}>
+              <span
+                onClick={() => setShowNotification((prev) => !prev)}
+                style={{
+                  cursor: "pointer",
+                  position: "relative",
+                  color: "#7367F0",
+                }}
+              >
+                <FaBell
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                  }}
+                />
 
+                {notifications.filter((n) => !n.isRead).length > 0 && (
+                  <span
+                    className="badge rounded-pill bg-danger"
+                    style={{
+                      position: "absolute",
+                      top: "-10px",
+                      right: "-12px",
+                      fontSize: "10px",
+                      minWidth: "18px",
+                      height: "18px",
+                    }}
+                  >
+                    {notifications.filter((n) => !n.isRead).length}
+                  </span>
+                )}
+              </span>
+
+              {showNotification && (
+                <div
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    top: "40px",
+                    width: "380px",
+                    background: "#fff",
+                    borderRadius: "12px",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+                    zIndex: 9999,
+                    overflow: "hidden",
+                  }}
+                >
+                  {/* Header */}
+                  <div
+                    className="d-flex justify-content-between align-items-center"
+                    style={{
+                      padding: "15px",
+                      borderBottom: "1px solid #eee",
+                    }}
+                  >
+                    <h6 className="mb-0" style={{ fontWeight: 600 }}>
+                      Notifications
+                    </h6>
+
+                    <span className="badge bg-primary">
+                      {notifications.length}
+                    </span>
+                  </div>
+
+                  {/* Notifications */}
+                  <div
+                    style={{
+                      maxHeight: "320px",
+                      overflowY: "auto",
+                    }}
+                  >
+                    {notifications?.slice(0, 4).map((item) => (
+                      <div
+                        key={item._id}
+                        style={{
+                          padding: "10px 14px",
+                          borderBottom: "1px solid #f3f4f6",
+                          background: item.isRead ? "#fff" : "#f8f7ff",
+                          cursor: "pointer",
+                          transition: "all .2s ease",
+                        }}
+                      >
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div
+                            style={{
+                              fontSize: "13px",
+                              fontWeight: 600,
+                              color: "#374151",
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {item.title}
+                          </div>
+
+                          {!item.isRead && (
+                            <span
+                              style={{
+                                width: "7px",
+                                height: "7px",
+                                borderRadius: "50%",
+                                background: "#7367F0",
+                                flexShrink: 0,
+                              }}
+                            />
+                          )}
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "#6b7280",
+                            marginTop: "2px",
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {item.message}
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: "11px",
+                            color: "#9ca3af",
+                            marginTop: "3px",
+                          }}
+                        >
+                          {moment(item.createdAt).fromNow()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Footer */}
+                  <div
+                    style={{
+                      padding: "12px",
+                      borderTop: "1px solid #eee",
+                      background: "#fafafa",
+                    }}
+                  >
+                    <button
+                      className="btn btn-primary w-100"
+                      onClick={() => {
+                        setShowNotification(false);
+                        navigate(
+                          `/${companySlug}/${projectSlug}/notification`,
+                          { replace: true }
+                        );
+                      }}
+                    >
+                      View All Notifications
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             <span
               style={{
                 fontWeight: "500",

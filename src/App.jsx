@@ -23,6 +23,7 @@ import SuperAdminDashboard from "./Pages/SuperAdminDashboard/SuperAdminDashboard
 import ProjectSummary from "./Pages/SummaryPage/ProjectSummary";
 import Permission from "./Pages/Permission/Permission";
 import Task from "./Pages/Tasks/task";
+import Notification from "./Pages/NotificationPage/Notification";
 export default function App() {
   return (
     <BrowserRouter>
@@ -46,7 +47,7 @@ export default function App() {
             <Route path="projects" element={<Project />} />
             <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
             <Route path="admin-dashboard" element={<AdminDashboard />} />
-             <Route path="permission" element={<Permission />} />
+            <Route path="permission" element={<Permission />} />
           </Route>
 
           <Route path=":companySlug/:projectId" element={<Layout />}>
@@ -54,7 +55,8 @@ export default function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="tasks" element={<Task/>} />
             <Route path="sprint" element={<SprintPage />} />
-             <Route path="summary" element={<ProjectSummary />} />
+            <Route path="summary" element={<ProjectSummary />} />
+            <Route path="notification" element={<Notification />} />
 
           </Route>
         </Route>

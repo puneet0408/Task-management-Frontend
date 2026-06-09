@@ -17,5 +17,6 @@ export default {
   mediauploaderaws : "/api/auth/v1/mediauploader",
   taskActivityEndpont :"/api/auth/v1/taskActivity",
   dashboardempSummaryWidget :"/api/auth/vi/dashboard/summaryemp",
-  dashboardadminSummaryWidget :"/api/auth/vi/dashboard/summaryadmin"
+  dashboardadminSummaryWidget :"/api/auth/vi/dashboard/summaryadmin",
+  notificationEndpoint:"/api/auth/vi/notification",
 };

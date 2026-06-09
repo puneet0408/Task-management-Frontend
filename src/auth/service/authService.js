@@ -252,4 +252,9 @@ export default class AuthService {
       withCredentials: true,
     });
   }
+  getNotification() {
+    return axios.get(apiConfig.notificationEndpoint, {
+      withCredentials: true,
+    });
+  }
 }
