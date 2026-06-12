@@ -1,5 +1,5 @@
 // src/components/Layout/Header.js
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef ,useMemo } from "react";
 import { Navbar, Nav } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -15,17 +15,29 @@ import { socket } from "../../socket/socket";
 import { CiBellOn } from "react-icons/ci";
 import { FaBell } from "react-icons/fa";
 import { Socket } from "socket.io-client";
+import Avatar from "../../Assets/avatar.png";
+import Notificationmodel from "./notificationmodel";
 import moment from "moment";
 export default function Header() {
   const navigate = useNavigate();
   const api = useApi();
   const role = localStorage.getItem("role") || "Guest";
+  const userData = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("userData")) || {};
+    } catch {
+      return {};
+    }
+  }, []);
+
+  
   const [projectOption, setProjectOption] = useState();
   const { companySlug } = useParams();
   const [selectedProject, setSelectedProject] = useState(null);
   const { currentUser } = useSelector((state) => state.userListPage);
   const [activebell, setActiveBell] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [activeSearch, setActiveSearch] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const dropdownRef = useRef(null);
   const companyName = currentUser?.company?.company_name;
@@ -58,6 +70,22 @@ export default function Header() {
       navigate(`${`/${activeCompany}/${currentproject}/dashboard`}`);
     }
   };
+
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (
@@ -189,7 +217,7 @@ export default function Header() {
               height: "100%",
             }}
           >
-            {!role === "superadmin" && (
+            {role !== "superadmin" && projectOption?.length > 1 && (
               <span>
                 <Select
                   options={projectOption}
@@ -234,166 +262,97 @@ export default function Header() {
               </span>
 
               {showNotification && (
+                <Notificationmodel
+                  notifications={notifications}
+                  setShowNotification={setShowNotification}
+                  companySlug={companySlug}
+                  projectSlug={projectSlug}
+                />
+              )}
+            </div>
+
+            <div className="position-relative" ref={profileRef}>
+              <div
+                onClick={() => setShowProfileMenu((prev) => !prev)}
+                style={{
+                  display: "flex",
+                  flexDirection:"column",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <img
+                  src={userData?.profilepic?.url || Avatar}
+                  alt="Profile"
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "2px solid #e5e7eb",
+                  }}
+                />
+
+                <span
+                  style={{
+                    fontWeight: "500",
+                    fontSize: "14px",
+                    color: "#4b5563",
+                  }}
+                >
+                  {role}
+                </span>
+              </div>
+
+              {showProfileMenu && (
                 <div
                   style={{
                     position: "absolute",
+                    top: "45px",
                     right: 0,
-                    top: "40px",
-                    width: "380px",
+                    width: "150px",
                     background: "#fff",
                     borderRadius: "12px",
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-                    zIndex: 9999,
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
                     overflow: "hidden",
+                    zIndex: 9999,
                   }}
                 >
-                  {/* Header */}
                   <div
-                    className="d-flex justify-content-between align-items-center"
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      navigate("/profile");
+                    }}
                     style={{
-                      padding: "15px",
-                      borderBottom: "1px solid #eee",
+                      padding: "12px 15px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
                     }}
                   >
-                    <h6 className="mb-0" style={{ fontWeight: 600 }}>
-                      Notifications
-                    </h6>
-
-                    <span className="badge bg-primary">
-                      {notifications.length}
-                    </span>
+                     Profile
                   </div>
 
-                  {/* Notifications */}
+                  {/* Logout */}
                   <div
+                    onClick={handleLogout}
                     style={{
-                      maxHeight: "320px",
-                      overflowY: "auto",
+                      padding: "12px 15px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      color: "#dc2626",
+                      borderTop: "1px solid #f3f4f6",
                     }}
                   >
-                    {notifications?.slice(0, 4).map((item) => (
-                      <div
-                        key={item._id}
-                        style={{
-                          padding: "10px 14px",
-                          borderBottom: "1px solid #f3f4f6",
-                          background: item.isRead ? "#fff" : "#f8f7ff",
-                          cursor: "pointer",
-                          transition: "all .2s ease",
-                        }}
-                      >
-                        <div className="d-flex justify-content-between align-items-center">
-                          <div
-                            style={{
-                              fontSize: "13px",
-                              fontWeight: 600,
-                              color: "#374151",
-                              lineHeight: 1.2,
-                            }}
-                          >
-                            {item.title}
-                          </div>
-
-                          {!item.isRead && (
-                            <span
-                              style={{
-                                width: "7px",
-                                height: "7px",
-                                borderRadius: "50%",
-                                background: "#7367F0",
-                                flexShrink: 0,
-                              }}
-                            />
-                          )}
-                        </div>
-
-                        <div
-                          style={{
-                            fontSize: "12px",
-                            color: "#6b7280",
-                            marginTop: "2px",
-                            lineHeight: 1.3,
-                          }}
-                        >
-                          {item.message}
-                        </div>
-
-                        <div
-                          style={{
-                            fontSize: "11px",
-                            color: "#9ca3af",
-                            marginTop: "3px",
-                          }}
-                        >
-                          {moment(item.createdAt).fromNow()}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Footer */}
-                  <div
-                    style={{
-                      padding: "12px",
-                      borderTop: "1px solid #eee",
-                      background: "#fafafa",
-                    }}
-                  >
-                    <button
-                      className="btn btn-primary w-100"
-                      onClick={() => {
-                        setShowNotification(false);
-                        navigate(
-                          `/${companySlug}/${projectSlug}/notification`,
-                          { replace: true }
-                        );
-                      }}
-                    >
-                      View All Notifications
-                    </button>
+                    <FiLogOut size={16} />
+                    Logout
                   </div>
                 </div>
               )}
             </div>
-            <span
-              style={{
-                fontWeight: "500",
-                fontSize: "14px",
-                color: "#4b5563",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              {role}
-            </span>
-
-            <button
-              onClick={handleLogout}
-              style={{
-                border: "none",
-                outline: "none",
-                cursor: "pointer",
-                borderRadius: "8px",
-                padding: "8px 14px",
-                fontSize: "14px",
-                color: "#dc2626",
-                fontWeight: "500",
-                backgroundColor: "transparent",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                transition: "0.2s",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#fef2f2")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              <FiLogOut size={16} />
-              Logout
-            </button>
           </Nav>
         </div>
       </Navbar>
