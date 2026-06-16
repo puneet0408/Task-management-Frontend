@@ -1,4 +1,7 @@
 import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { toSlug } from "../../../Utils/srugs";
 
 function PriorityBreakdown({ data = [] }) {
   // Priority mapping
@@ -15,6 +18,26 @@ function PriorityBreakdown({ data = [] }) {
       label: "Low",
       color: "#3b82f6",
     },
+  };
+    const navigate = useNavigate();
+  const { companySlug } = useParams();
+  const { currentUser } = useSelector((state) => state.userListPage);
+  const projectName = currentUser?.preferences?.activeProject?.projectName;
+  const projectSlug = toSlug(projectName);
+
+    const handleitemClick = (item) => {
+      console.log(item,"item");
+      let ProrityTab;
+      if(item.priority == 1){
+        ProrityTab = "high"
+      } else if (item.priority == 2){
+        ProrityTab = "medium"
+      }else {
+        ProrityTab:"low"
+      }
+    navigate(
+      `/${companySlug}/${projectSlug}/result?filter=${item?.priority}&tab=${ProrityTab}&key=${"priority"}`,
+    );
   };
 
   // Total count
@@ -39,7 +62,7 @@ function PriorityBreakdown({ data = [] }) {
               </div>
 
               {/* Progress Bar */}
-              <div style={styles.progressWrapper}>
+              <div  onClick={() => handleitemClick(item)} style={styles.progressWrapper}>
                 <div
                   style={{
                     ...styles.progress,
@@ -50,7 +73,7 @@ function PriorityBreakdown({ data = [] }) {
               </div>
 
               {/* Count */}
-              <div style={styles.count}>{item.count}</div>
+              <div  style={styles.count}>{item.count}</div>
             </div>
           );
         })}
@@ -96,6 +119,7 @@ title: {
     background: "#e5e5e5",
     borderRadius: 999,
     overflow: "hidden",
+    cursor:"pointer",
   },
 
   progress: {

@@ -1,4 +1,7 @@
 import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { toSlug } from "../../../Utils/srugs";
 
 const STATUS_COLORS = {
   todo: "#06B6D4",
@@ -19,19 +22,27 @@ const STATUS_LABELS = {
 };
 
 function TeamStatusChart({ data = [] }) {
-  // Sort users by highest task count
-  const sorted = [...data].sort(
-    (a, b) => b.count - a.count
-  );
+  const navigate = useNavigate();
+  const { companySlug } = useParams();
+  const { currentUser } = useSelector((state) => state.userListPage);
+  const projectName = currentUser?.preferences?.activeProject?.projectName;
+  const projectSlug = toSlug(projectName);
+  const handleitemClick = (item, user) => {
+    console.log(item, user,"item");
+
+    if (user == null) return;
+    navigate(
+      `/${companySlug}/${projectSlug}/result?filter=${user}&tab=${item}&key=${"assignedTo"}&status=${item}`
+    );
+  };
+  const sorted = [...data].sort((a, b) => b.count - a.count);
 
   const max = sorted[0]?.count || 1;
 
   return (
     <div style={styles.card}>
       {/* TITLE */}
-      <h3 style={styles.title}>
-        State wise No. of Items for Individuals
-      </h3>
+      <h3 style={styles.title}>State wise No. of Items for Individuals</h3>
 
       {/* CHART */}
       <div style={styles.wrapper}>
@@ -47,40 +58,33 @@ function TeamStatusChart({ data = [] }) {
           return (
             <div key={index} style={styles.row}>
               {/* USER NAME */}
-              <div style={styles.name}>
-                {user.name || "Unassigned"}
-              </div>
+              <div style={styles.name}>{user.name || "Unassigned"}</div>
 
               {/* STATUS BAR */}
               <div style={styles.track}>
-                {Object.entries(STATUS_COLORS).map(
-                  ([status, color]) => {
-                    const value = user[status] || 0;
+                {Object.entries(STATUS_COLORS).map(([status, color]) => {
+                  const value = user[status] || 0;
 
-                    if (value === 0) return null;
+                  if (value === 0) return null;
 
-                    const width =
-                      (value / total) * 100;
+                  const width = (value / total) * 100;
 
-                    return (
-                      <div
-                        key={status}
-                        style={{
-                          width: `${width}%`,
-                          background: color,
-                          height: "100%",
-                        }}
-                        title={`${STATUS_LABELS[status]} : ${value}`}
-                      />
-                    );
-                  }
-                )}
+                  return (
+                    <div
+                      onClick={() => handleitemClick(status, user?.userId)}
+                      key={status}
+                      style={{
+                        cursor: "pointer",
+                        width: `${width}%`,
+                        background: color,
+                        height: "100%",
+                      }}
+                      title={`${STATUS_LABELS[status]} : ${value}`}
+                    />
+                  );
+                })}
               </div>
-
-              {/* TOTAL COUNT */}
-              <div style={styles.count}>
-                {user.count}
-              </div>
+              <div style={styles.count}>{user.count}</div>
             </div>
           );
         })}
@@ -88,25 +92,18 @@ function TeamStatusChart({ data = [] }) {
 
       {/* LEGEND */}
       <div style={styles.legend}>
-        {Object.entries(STATUS_COLORS).map(
-          ([status, color]) => (
-            <div
-              key={status}
-              style={styles.legendItem}
-            >
-              <span
-                style={{
-                  ...styles.legendDot,
-                  background: color,
-                }}
-              />
+        {Object.entries(STATUS_COLORS).map(([status, color]) => (
+          <div key={status} style={styles.legendItem}>
+            <span
+              style={{
+                ...styles.legendDot,
+                background: color,
+              }}
+            />
 
-              <span>
-                {STATUS_LABELS[status]}
-              </span>
-            </div>
-          )
-        )}
+            <span>{STATUS_LABELS[status]}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

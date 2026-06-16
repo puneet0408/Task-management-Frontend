@@ -1,5 +1,5 @@
 // src/components/Layout/Header.js
-import React, { useEffect, useState, useRef ,useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { Navbar, Nav } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -18,6 +18,7 @@ import { Socket } from "socket.io-client";
 import Avatar from "../../Assets/avatar.png";
 import Notificationmodel from "./notificationmodel";
 import moment from "moment";
+import { Search, X } from "react-feather";
 export default function Header() {
   const navigate = useNavigate();
   const api = useApi();
@@ -30,7 +31,9 @@ export default function Header() {
     }
   }, []);
 
-  
+  const [showSearch, setShowSearch] = useState(false);
+  const [search, setSearch] = useState("");
+  const searchRef = useRef(null);
   const [projectOption, setProjectOption] = useState();
   const { companySlug } = useParams();
   const [selectedProject, setSelectedProject] = useState(null);
@@ -43,6 +46,72 @@ export default function Header() {
   const companyName = currentUser?.company?.company_name;
   const projectName = currentUser?.preferences?.activeProject?.projectName;
   const projectSlug = toSlug(projectName);
+
+  const [filteredResults, setFilteredResult] = useState("");
+  const [visibleResults, setVisibleResult] = useState([]);
+
+  useEffect(() => {
+    setVisibleResult(filteredResults?.slice(0, 5));
+  }, [filteredResults]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        // Close only when search is empty
+        if (!search.trim()) {
+          setShowSearch(false);
+          setSearch("");
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [search]);
+
+  const timerRef = useRef(null);
+  const controllerRef = useRef(null);
+  const SEARCH_DELAY = 400;
+
+  const handleSearch = (value) => {
+    setSearch(value);
+    clearTimeout(timerRef.current);
+
+    if (!value.trim()) {
+      setFilteredResult([]);
+      return;
+    }
+    timerRef.current = setTimeout(() => {
+      callApi(value);
+    }, SEARCH_DELAY);
+  };
+
+  const callApi = async (value) => {
+    if (controllerRef.current) {
+      controllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    controllerRef.current = controller;
+
+    try {
+      const res = await api.gettask({ searchValue: value }, controller.signal);
+      setFilteredResult(res?.data?.data || []);
+    } catch (err) {
+      if (err.name !== "CanceledError" && err.name !== "AbortError") {
+        console.error(err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timerRef.current);
+      if (controllerRef.current) controllerRef.current.abort();
+    };
+  }, []);
 
   const dispatch = useDispatch();
   const { ProjectCardItem } = useSelector((state) => state.Projectcardpage);
@@ -217,6 +286,153 @@ export default function Header() {
               height: "100%",
             }}
           >
+            <div
+              ref={searchRef}
+              className="position-relative"
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setShowSearch(false);
+                  setSearch("");
+                }
+              }}
+            >
+              {!showSearch ? (
+                <button
+                  type="button"
+                  className="btn btn-link d-flex align-items-center text-muted text-decoration-none p-0"
+                  onClick={() => setShowSearch(true)}
+                  aria-label="Open search"
+                >
+                  <Search size={16} className="me-1" />
+                  <span>Search</span>
+                </button>
+              ) : (
+                <>
+                  <div
+                    className="d-flex align-items-center border rounded-3 overflow-hidden bg-white shadow-sm"
+                    style={{ height: "38px", width: "320px" }}
+                  >
+                    <div
+                      className="px-3 border-end bg-light text-muted h-100 d-flex align-items-center"
+                      style={{
+                        whiteSpace: "nowrap",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Task
+                    </div>
+                    <div className="d-flex align-items-center flex-grow-1 px-2">
+                      <Search
+                        size={14}
+                        className="text-muted me-2 flex-shrink-0"
+                      />
+                      <input
+                        autoFocus
+                        type="text"
+                        value={search}
+                        onChange={(e) => handleSearch(e.target.value)}
+                        placeholder="Search tasks"
+                        className="border-0 w-100 bg-transparent"
+                        style={{
+                          outline: "none",
+                          boxShadow: "none",
+                          fontSize: "14px",
+                        }}
+                        aria-label="Search this project"
+                      />
+                      <X
+                        size={16}
+                        className="text-muted flex-shrink-0"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          if (search) {
+                            setSearch("");
+                          } else {
+                            setShowSearch(false);
+                          }
+                        }}
+                        aria-label={search ? "Clear search" : "Close search"}
+                      />
+                    </div>
+                  </div>
+                  {search.trim() && (
+                    <div
+                      className="bg-white border rounded-3 shadow-sm mt-1 overflow-hidden"
+                      style={{
+                        position: "absolute",
+                        top: "46px",
+                        width: "440px",
+                        zIndex: 1050,
+                      }}
+                    >
+                      {visibleResults.length ? (
+                        <>
+                          <div className="list-group list-group-flush">
+                            {visibleResults.map((item) => (
+                              <button
+                                key={item._id}
+                                type="button"
+                                className="list-group-item list-group-item-action text-start border-0 py-2"
+                                onClick={() => {
+                                  setShowSearch(false);
+                                  navigate(
+                                    `/${companySlug}/${projectSlug}/tasks`,
+                                    {
+                                      replace: true,
+                                      state: { viewtask: item },
+                                    }
+                                  );
+                                  setSearch("");
+                                }}
+                              >
+                                <div
+                                  className="text-muted"
+                                  style={{ fontSize: "12px" }}
+                                >
+                                  {item.type}
+                                </div>
+                                <div
+                                  className="fw-medium"
+                                  style={{ fontSize: "14px" }}
+                                >
+                                  {item.title}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                          {filteredResults?.length > 5 && (
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-light w-100 rounded-0 border-top"
+                              onClick={() =>{
+                                setShowSearch(false);
+                                navigate(
+                                  `/${companySlug}/${projectSlug}/result?q=${encodeURIComponent(
+                                    search
+                                  )}`
+                                )
+                                setSearch("");
+                              }
+                              }
+                            >
+                              View all results ({filteredResults.length})
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        <div
+                          className="p-3 text-center text-muted"
+                          style={{ fontSize: "14px" }}
+                        >
+                          No results found for "{search}"
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
             {role !== "superadmin" && projectOption?.length > 1 && (
               <span>
                 <Select
@@ -276,7 +492,7 @@ export default function Header() {
                 onClick={() => setShowProfileMenu((prev) => !prev)}
                 style={{
                   display: "flex",
-                  flexDirection:"column",
+                  flexDirection: "column",
                   alignItems: "center",
                   cursor: "pointer",
                 }}
@@ -331,7 +547,7 @@ export default function Header() {
                       gap: "10px",
                     }}
                   >
-                     Profile
+                    Profile
                   </div>
 
                   {/* Logout */}

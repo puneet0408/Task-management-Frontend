@@ -1,4 +1,7 @@
 import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { toSlug } from "../../../Utils/srugs";
 
 const COLORS = [
   "#534AB7",
@@ -12,11 +15,23 @@ const COLORS = [
 ];
 
 function TeamWorkloadChart({ data = [] }) {
+    const navigate = useNavigate();
+    const { companySlug } = useParams();
+    const { currentUser } = useSelector((state) => state.userListPage);
+    const projectName = currentUser?.preferences?.activeProject?.projectName;
+    const projectSlug = toSlug(projectName);
+    const handleitemClick = (item) => {
+      if(item?.userId == null) return;
+      navigate(
+        `/${companySlug}/${projectSlug}/result?filter=${item?.userId}&tab=${item?.name}&key=${"assignedTo"}`
+      );
+    };
   // Sort highest count first
   const sorted = [...data]
     .map((item) => ({
       name: item.name || "Unassigned",
       count: item.count,
+      userId:item.userId,
     }))
     .sort((a, b) => b.count - a.count);
 
@@ -29,6 +44,8 @@ function TeamWorkloadChart({ data = [] }) {
       <div style={styles.wrapper}>
         {sorted.map((item, index) => {
           const percentage = (item.count / max) * 100;
+          console.log(item,"item");
+          
 
           return (
             <div key={index} style={styles.row}>
@@ -38,13 +55,14 @@ function TeamWorkloadChart({ data = [] }) {
               </div>
 
               {/* Progress Bar */}
-              <div style={styles.track}>
+              <div  onClick={() => handleitemClick(item)} style={styles.track}>
                 <div
                   style={{
                     ...styles.fill,
                     width: `${percentage}%`,
                     background:
                       COLORS[index % COLORS.length],
+                      cursor:"pointer"
                   }}
                 />
               </div>

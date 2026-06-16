@@ -1,10 +1,7 @@
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-} from "recharts";
+import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { toSlug } from "../../../Utils/srugs";
 
 export default function TasksByType({ data = [] }) {
   const chartData = data.map((item) => ({
@@ -14,39 +11,50 @@ export default function TasksByType({ data = [] }) {
 
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 
-const COLORS = {
-  task: "#0067b5",  
-  bug: "#EF9F27",    
-  story: "#fd0997", 
-};
+  const COLORS = {
+    task: "#0067b5",
+    bug: "#EF9F27",
+    story: "#fd0997",
+  };
+  const navigate = useNavigate();
+  const { companySlug } = useParams();
+  const { currentUser } = useSelector((state) => state.userListPage);
+  const projectName = currentUser?.preferences?.activeProject?.projectName;
+  const projectSlug = toSlug(projectName);
+  const handleitemClick = (entry) => {
+    navigate(
+      `/${companySlug}/${projectSlug}/result?filter=${entry?.name}&tab=${entry?.name}&key=${"type"}`,
+    );
+  };
 
   return (
     <div style={styles.card}>
       <h4 style={styles.title}>Tasks by Type</h4>
 
-      <div   style={{
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
-    marginTop: 10,
-  }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          position: "relative",
+          marginTop: 10,
+        }}
+      >
         <PieChart width={220} height={220}>
           <Pie
             data={chartData}
             cx="50%"
             cy="50%"
             innerRadius={50}
-           outerRadius={80}
+            outerRadius={80}
             dataKey="value"
             stroke="none"
           >
             {chartData.map((entry, index) => (
               <Cell
+                onClick={() => handleitemClick(entry)}
                 key={`cell-${index}`}
-                fill={
-                  COLORS[entry.name?.toLowerCase()] || "#8884d8"
-                }
+                fill={COLORS[entry.name?.toLowerCase()] || "#8884d8"}
               />
             ))}
           </Pie>
@@ -64,14 +72,14 @@ const COLORS = {
 }
 
 const styles = {
-card: {
-  background: "#f5f5f5",
-  borderRadius: 12,
-  padding: 18,
-  minHeight: 340,
-  width: "100%",
-  boxSizing: "border-box",
-},
+  card: {
+    background: "#f5f5f5",
+    borderRadius: 12,
+    padding: 18,
+    minHeight: 340,
+    width: "100%",
+    boxSizing: "border-box",
+  },
 
   title: {
     marginBottom: "10px",

@@ -149,10 +149,11 @@ export default class AuthService {
       withCredentials: true,
     });
   }
-  gettask(params = {}) {
+  gettask(params = {}, signal) {
     return axios.get(apiConfig.curdTaskEndpoint, {
       params,
       withCredentials: true,
+      signal,
     });
   }
   createTask(data) {
@@ -236,17 +237,15 @@ export default class AuthService {
       withCredentials: true,
     });
   }
-
-  
   dashboardempSummaryWidget(params = {}) {
-    console.log(params,"params");
+    console.log(params, "params");
     return axios.get(apiConfig.dashboardempSummaryWidget, {
       params,
       withCredentials: true,
     });
   }
-    dashboardadminSummaryWidget(params = {}) {
-    console.log(params,"params");
+  dashboardadminSummaryWidget(params = {}) {
+    console.log(params, "params");
     return axios.get(apiConfig.dashboardadminSummaryWidget, {
       params,
       withCredentials: true,

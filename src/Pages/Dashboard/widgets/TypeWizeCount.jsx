@@ -1,4 +1,8 @@
 import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { toSlug } from "../../../Utils/srugs";
+
 
 const STATUS_COLORS = {
 taskCount: "#3B82F6",
@@ -12,9 +16,22 @@ const Type_Labels = {
 
 function TypeWIzeTaskCountofUsers({ data = [] }) {
   // Sort users by highest task count
+ const navigate = useNavigate();
+  const { companySlug } = useParams();
+  const { currentUser } = useSelector((state) => state.userListPage);
+  const projectName = currentUser?.preferences?.activeProject?.projectName;
+  const projectSlug = toSlug(projectName);
+  const handleitemClick = (item, user) => {
+    if (user == null) return;
+    navigate(
+      `/${companySlug}/${projectSlug}/result?filter=${user}&tab=${item}&key=${"assignedTo"}&type=${item === "bugCount" ? "bug":"task"}`
+    );
+  };
   const sorted = [...data].sort(
     (a, b) => b.count - a.count
   );
+  console.log(sorted,"sorted");
+  
 
   const max = sorted[0]?.count || 1;
 
@@ -53,10 +70,12 @@ function TypeWIzeTaskCountofUsers({ data = [] }) {
                     return (
                       <div
                         key={status}
+                        onClick={() => handleitemClick(status, user?.userId)}
                         style={{
                           width: `${width}%`,
                           background: color,
                           height: "100%",
+                          cursor:"pointer",
                         }}
                         title={`${Type_Labels[status]} : ${value}`}
                       />

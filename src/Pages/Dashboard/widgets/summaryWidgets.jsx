@@ -1,26 +1,41 @@
 import React from "react";
+import { useNavigate , useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { toSlug } from "../../../Utils/srugs";
 
 const cards = [
-  { key: "total", label: "Total tasks", color: "#534AB7", sub: "this sprint" },
+  { key: "total",tab:"Total Tasks", label: "Total tasks", color: "#534AB7", sub: "this sprint" },
   {
     key: "overdue",
     label: "OverDue",
+    tab:"Over Due Task",
     color: "#1D9E75",
     sub: "Need Action",
   },
-  { key: "todo", label: "To do", color: "#888780", sub: "yet to start" },
+  { key: "todo", tab:"Todo Tasks", label: "To do", color: "#888780", sub: "yet to start" },
   {
     key: "unassignedTasks",
     label: "Unassigned",
+    tab:" Unassigned Tasks",
     color: "#EF9F27",
     sub: "Assigned Now",
   },
 ];
 
 function SummaryWidgets({ summaryWidgetData }) {
+  const navigate = useNavigate();
+  const { companySlug } = useParams();
+  const { currentUser } = useSelector((state) => state.userListPage);
+  const projectName = currentUser?.preferences?.activeProject?.projectName;
+  const projectSlug = toSlug(projectName);
+  const handleSummaryClick = (key , tab) => {
+     navigate(
+      `/${companySlug}/${projectSlug}/result?filter=${key}&tab=${tab}`,
+    );
+  };
+
   if (!summaryWidgetData) return null;
-  console.log(summaryWidgetData,"summaryWidgetData");
-  
+  console.log(summaryWidgetData, "summaryWidgetData");
 
   return (
     <div
@@ -30,10 +45,11 @@ function SummaryWidgets({ summaryWidgetData }) {
         gap: 12,
       }}
     >
-      {cards.map(({ key, label, color, sub }) => (
+      {cards.map(({ key, label, color, sub , tab }) => (
         <div
+          onClick={() => handleSummaryClick(key , tab)}
           key={key}
-          style={{ background: "#f5f5f5", borderRadius: 8, padding: "1rem" }}
+          style={{ background: "#f5f5f5", borderRadius: 8, padding: "1rem",cursor:"pointer" }}
         >
           <p style={{ fontSize: 12, color: "#666", margin: "0 0 8px" }}>
             {label}

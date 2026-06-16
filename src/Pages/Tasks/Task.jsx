@@ -10,13 +10,16 @@ import KanbanBoard from "./kanbanBoard";
 import { CiSettings } from "react-icons/ci";
 import StageColumns from "./StageColumn/StageColumn";
 import FilterComponent from "./filter";
+import { useLocation ,useNavigate} from "react-router-dom";
+
 
 function TaskPage() {
   const api = useApi();
   const dispatch = useDispatch();
-
+  const location = useLocation();
+  const navigate = useNavigate();
   const { SprintListItem } = useSelector((state) => state.SprintListPAge);
-  
+
   const { currentUser } = useSelector((state) => state.userListPage);
   const [stageColumnModel, setStageColumnMOdel] = useState(false);
 
@@ -34,37 +37,37 @@ function TaskPage() {
     };
   });
 
- useEffect(() => {
-  const kanbanColumns = async () => {
-    try {
-      const res = await api.getkanbancolumn();
-      let data = res?.data?.data?.data || [];
-      const stageOrder = {
-        New: 1,
-        in_progress: 2,
-        qa: 3,
-        done: 4,
-        live: 5,
-        closed: 6,
-      };
-      data = data.map((item, index) => ({
-        ...item,
-        key: item._id || `col_${index}`,
-        bugState: item.bugStage?.toLowerCase(),
-        taskState: item.taskStage?.toLowerCase(),
-      }));
-      data.sort((a, b) => {
-        const orderA = stageOrder[a.taskStage] || 999;
-        const orderB = stageOrder[b.taskStage] || 999;
-        return orderA - orderB;
-      });
-      setColumns(data);
-    } catch (error) {
-      console.error("Error fetching kanban columns:", error);
+  useEffect(() => {
+    const kanbanColumns = async () => {
+      try {
+        const res = await api.getkanbancolumn();
+        let data = res?.data?.data?.data || [];
+        const stageOrder = {
+          New: 1,
+          in_progress: 2,
+          qa: 3,
+          done: 4,
+          live: 5,
+          closed: 6,
+        };
+        data = data.map((item, index) => ({
+          ...item,
+          key: item._id || `col_${index}`,
+          bugState: item.bugStage?.toLowerCase(),
+          taskState: item.taskStage?.toLowerCase(),
+        }));
+        data.sort((a, b) => {
+          const orderA = stageOrder[a.taskStage] || 999;
+          const orderB = stageOrder[b.taskStage] || 999;
+          return orderA - orderB;
+        });
+        setColumns(data);
+      } catch (error) {
+        console.error("Error fetching kanban columns:", error);
       }
-  };
-  kanbanColumns();
-}, []);
+    };
+    kanbanColumns();
+  }, []);
 
   useEffect(() => {
     const getAllUserlist = async () => {
@@ -138,6 +141,21 @@ function TaskPage() {
     setSelectedWorkType(option);
     setTaskModel(true);
   };
+
+ useEffect(() => {
+  if (!location.state?.viewtask) return;
+  handleWorkItemChange(
+    {
+      value: location.state.viewtask.type,
+      isedit: true,
+    },
+    location.state.viewtask
+  );
+  navigate(location.pathname, {
+    replace: true,
+    state: null,
+  });
+}, []);
   const handleSprintChange = async (value) => {
     const res = await api.MarkDefultSprint(value?.value);
     if (res.status === 200) {
@@ -154,8 +172,8 @@ function TaskPage() {
       if (activeFilters.types?.length) {
         payload.type = activeFilters.types.map((t) => t.value).join(",");
       }
-      if(ActiveSprint){
-       payload.sprintId = ActiveSprint.value;
+      if (ActiveSprint) {
+        payload.sprintId = ActiveSprint.value;
       }
       if (activeFilters.columns?.length) {
         payload.taskStatus = activeFilters.columns
@@ -172,8 +190,8 @@ function TaskPage() {
       }
       const response = await api.gettask(payload);
       const data = response?.data?.data || [];
-      console.log(data,"data");
-      
+      console.log(data, "data");
+
       const storiesMap = {};
       data.forEach((item) => {
         if (item.type === "story") {
@@ -202,7 +220,7 @@ function TaskPage() {
     };
 
     fetchtask();
-  }, [rerender, activeFilters , ActiveSprint]);
+  }, [rerender, activeFilters, ActiveSprint]);
 
   const handleDragEnd = async (event) => {
     const { active, over } = event;

@@ -25,6 +25,7 @@ import Permission from "./Pages/Permission/Permission";
 import Task from "./Pages/Tasks/task";
 import Notification from "./Pages/NotificationPage/Notification";
 import Profilepage from "./Pages/AdminDasgboard/ProfilePage";
+import ResultPage from "./Pages/ResultPage/Resultpage";
 export default function App() {
   return (
     <BrowserRouter>
@@ -58,6 +59,7 @@ export default function App() {
             <Route path="sprint" element={<SprintPage />} />
             <Route path="summary" element={<ProjectSummary />} />
             <Route path="notification" element={<Notification />} />
+            <Route path="result" element={<ResultPage />} />
           </Route>
         </Route>
 
