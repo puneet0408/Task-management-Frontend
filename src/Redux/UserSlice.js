@@ -91,14 +91,33 @@ export const fetchCurrentLogin = createAsyncThunk(
     }
   }
 );
+export const refreshSession = createAsyncThunk(
+  "userListPage/refreshSession",
+  async (_, { rejectWithValue }) => {
+    try {
+      const api = new AuthService();
 
+      const res = await api.refreshToken();
+
+      if (res?.status === 201) {
+        return res.data;
+      }
+
+      return rejectWithValue("Session expired");
+    } catch (error) {
+      return rejectWithValue(
+        error?.response?.data?.msg || "Session expired"
+      );
+    }
+  }
+);
 export const UsersSlice = createSlice({
   name: "userListPage",
   initialState: {
     allUserListItems: [],
     currentUser: null,
     loading: false,
-    loadingsingle:false,
+    loadingsingle:true,
     error: "",
     params: {
       dateFrom: null,
@@ -144,7 +163,18 @@ export const UsersSlice = createSlice({
       .addCase(fetchCurrentLogin.rejected, (state, action) => {
         state.loadingsingle = false;
         state.error = action.payload;
-      });
+      })
+      .addCase(refreshSession.pending, (state) => {
+  state.loadingsingle = true;
+})
+.addCase(refreshSession.fulfilled, (state, action) => {
+  state.loadingsingle = false;
+  state.currentUser = action.payload?.data || null;
+})
+.addCase(refreshSession.rejected, (state) => {
+  state.loadingsingle = false;
+  state.currentUser = null;
+})  
   },
   reducers: {
     setDateFrom: (state, action) => {

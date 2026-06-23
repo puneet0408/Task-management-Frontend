@@ -21,6 +21,7 @@ import useApi from "../../auth/service/useApi";
 import TableToolbar from "../../Components/Toolbox/Toolbox";
 import AddSprint from "./AddSprint";
 import DateFilterModal from "../../Components/DateFilterModal/DateFiler";
+import LoadingScreen from "../loadingpage";
 import Swal from "sweetalert2";
 function SprintPage() {
   const dispatch = useDispatch();
@@ -218,6 +219,7 @@ function SprintPage() {
 
   return (
     <div>
+      {loading && <LoadingScreen />}
       <div className="rowAllignment">
         <Breadcrumbs
           title={"Sprint"}
@@ -227,9 +229,9 @@ function SprintPage() {
             { label: "List" },
           ]}
         />
-        <Button onClick={handleAddsprint} className="add-btn">
+        <button onClick={handleAddsprint} className="add-btn">
           + Add Sprint
-        </Button>
+        </button>
       </div>
       <TableToolbar
         searchvalue={searchvalue}
@@ -307,10 +309,7 @@ function SprintPage() {
           </span>
         )}
       </div>
-           {loading ? (
-        <LoadingModule />
-      ) : (
-        <>
+
       <CustomTable
         columns={columns}
         data={
@@ -337,8 +336,7 @@ function SprintPage() {
         onOffsetChange={(offset) => dispatch(setParams({ offset }))}
         onLimitChange={(limit) => dispatch(setParams({ offset: 0, limit }))}
       />
-      </>
-      )}
+
       <AddSprint
         openAddForm={openAddForm}
         setOpenAddForm={setOpenAddForm}

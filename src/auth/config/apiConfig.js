@@ -1,6 +1,7 @@
 export default {
   login: "/api/auth/v1/login",
   logout: "/api/auth/v1/logout",
+  refreshtokkenEndpoint :"/api/auth/v1/refresh",
   getProfile: "/api/user/v1/profile",
   curdCompanyEndpoint: "/api/auth/v1/companies",
   curdUsersEndpoint: "/api/auth/v1/users",

@@ -217,16 +217,17 @@ export default function Header() {
   }, []);
 
   const handleLogout = async () => {
-    const api = new AuthService();
-    const res = await api.logout();
-    if (res.status === 500) {
-      navigate("./login");
+    try {
+      await api.logout();
+
+      localStorage.clear();
+
+      navigate("/login", { replace: true });
+
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
     }
-    if (res.status === 201) {
-      navigate("./login");
-    }
-    localStorage.clear();
-    window.location.reload();
   };
 
   return (
@@ -405,16 +406,15 @@ export default function Header() {
                             <button
                               type="button"
                               className="btn btn-sm btn-light w-100 rounded-0 border-top"
-                              onClick={() =>{
+                              onClick={() => {
                                 setShowSearch(false);
                                 navigate(
                                   `/${companySlug}/${projectSlug}/result?q=${encodeURIComponent(
                                     search
                                   )}`
-                                )
+                                );
                                 setSearch("");
-                              }
-                              }
+                              }}
                             >
                               View all results ({filteredResults.length})
                             </button>

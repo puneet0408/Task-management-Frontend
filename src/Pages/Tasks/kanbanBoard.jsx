@@ -48,6 +48,14 @@ export default function KanbanBoard({
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
 
+  
+  const hasData = stories?.some(
+  (story) =>
+    story?.storyTitle ||
+    story?.tasks?.length > 0 ||
+    story?.bugs?.length > 0
+);
+
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <div
@@ -106,6 +114,44 @@ export default function KanbanBoard({
             </div>
           ))}
         </div>
+
+              {hasData ? (
+  stories.map((story) => (
+    <div
+      key={story.storyId}
+      style={{
+        display: "flex",
+        borderBottom: "1px solid #e5e7eb",
+      }}
+    >
+    </div>
+  ))
+) : (
+  <div
+    style={{
+      background: "#fff",
+      padding: "80px 20px",
+      textAlign: "center",
+      minHeight: "400px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <h3
+      style={{
+        fontSize: 22,
+        fontWeight: 600,
+        color: "#111827",
+        marginBottom: 8,
+      }}
+    >
+      No Work Items Found
+    </h3>
+  </div>
+)}
+        
         {stories.map((story) => (
           <div
             key={story.storyId}

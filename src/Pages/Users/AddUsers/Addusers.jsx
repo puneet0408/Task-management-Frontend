@@ -24,6 +24,8 @@ import toast from "react-hot-toast";
 import useApi from "../../../auth/service/useApi";
 
 function AddUsers({ openAddForm, setOpenAddForm, editData, seteditData }) {
+  console.log(editData, "editData");
+
   const api = useApi();
   const toggle = () => setOpenAddForm(!openAddForm);
   const defaultValues = {
@@ -41,7 +43,8 @@ function AddUsers({ openAddForm, setOpenAddForm, editData, seteditData }) {
   };
   const { allListItems } = useSelector((state) => state.companyListPage);
   const { ProjectCardItem } = useSelector((state) => state.Projectcardpage);
-  const [loading , setloading] = useState(false);
+  const [loading, setloading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const prodValidation = yup.object().shape({
     name: yup.string().trim().required("Name is mandatory"),
@@ -90,7 +93,7 @@ function AddUsers({ openAddForm, setOpenAddForm, editData, seteditData }) {
     if (editData) {
       reset({
         name: editData.name || "",
-        company_name: editData.company_name || "",
+        company_name: editData?.company?.company_name || "",
         project_name: Array.isArray(editData.project_name)
           ? editData.project_name
           : [],
@@ -136,11 +139,13 @@ function AddUsers({ openAddForm, setOpenAddForm, editData, seteditData }) {
     reset(defaultValues);
     setOpenAddForm(false);
     seteditData(null);
+    setErrorMessage("");
   };
 
   const onSubmit = async (formData) => {
     try {
       setloading(true);
+      setErrorMessage("");
       const isEdit = Boolean(editData?._id);
       const res = isEdit
         ? await api.editUsers(formData, editData._id)
@@ -154,8 +159,11 @@ function AddUsers({ openAddForm, setOpenAddForm, editData, seteditData }) {
         dispatch(fetchUsersData());
       }
     } catch (err) {
+      console.log(err?.response?.data?.data?.msg);
+      setErrorMessage(
+        err?.response?.data?.data?.msg || "internal server error"
+      );
       setloading(false);
-      toast.error("Something went wrong");
     }
   };
 
@@ -398,23 +406,35 @@ function AddUsers({ openAddForm, setOpenAddForm, editData, seteditData }) {
                   )}
                 />
               </Col>
-              <Col md={6}>
-                <Label className="form-label">Status</Label>
-                <Controller
-                  name="status"
-                  control={control}
-                  render={({ field }) => (
-                    <Input {...field} type="select" className="form-input">
-                      <option value="pending">Pending</option>
-                      <option value="inactive">Inactive</option>
-                    </Input>
-                  )}
-                />
-              </Col>
+              {editData ? (
+                <Col md={6}>
+                  <Label className="form-label">Status</Label>
+                  <Controller
+                    name="status"
+                    control={control}
+                    render={({ field }) => (
+                      <Input {...field} type="select" className="form-input">
+                        <option value="pending">Pending</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </Input>
+                    )}
+                  />
+                </Col>
+              ) : (
+                ""
+              )}
               <Col md={12} className="text-end mt-3">
-                <Button className="submit-btn" disabled={loading} >{loading ? "...Submiting" :"submit"}</Button>
+                <Button className="submit-btn" disabled={loading}>
+                  {loading ? "...Submiting" : "submit"}
+                </Button>
               </Col>
             </Row>
+                {errorMessage ? (
+                <p style={{ color: "red"}}>{errorMessage}</p>
+              ) : (
+                ""
+              )}
           </Form>
         </ModalBody>
       </Modal>

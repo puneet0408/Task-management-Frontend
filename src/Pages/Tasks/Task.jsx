@@ -10,8 +10,9 @@ import KanbanBoard from "./kanbanBoard";
 import { CiSettings } from "react-icons/ci";
 import StageColumns from "./StageColumn/StageColumn";
 import FilterComponent from "./filter";
-import { useLocation ,useNavigate} from "react-router-dom";
-
+import { useLocation, useNavigate } from "react-router-dom";
+import EmptyKanban from "./EmptyKanban";
+import LoadingScreen from "../loadingpage";
 
 function TaskPage() {
   const api = useApi();
@@ -22,20 +23,39 @@ function TaskPage() {
 
   const { currentUser } = useSelector((state) => state.userListPage);
   const [stageColumnModel, setStageColumnMOdel] = useState(false);
+  const [loadingState, setLoadingState] = useState(false);
 
   const [SprintOption, setSprintOption] = useState([]);
   const [openTaskModel, setTaskModel] = useState(false);
   const [columns, setColumns] = useState([]);
   const [userList, setUserList] = useState("");
 
-  const [ActiveSprint, setActiveSprint] = useState(() => {
+  const [ActiveSprint, setActiveSprint] = useState(null);
+  console.log(ActiveSprint, "activesprint");
+
+  useEffect(() => {
+    const optiondata = SprintListItem.map((sprint) => ({
+      label: sprint?.sprintName,
+      value: sprint?._id,
+    }));
+
+    setSprintOption(optiondata);
+
     const stored = localStorage.getItem("userData");
     const userData = stored ? JSON.parse(stored) : {};
-    return {
-      label: userData?.preferences?.Activesprint?.sprintName,
-      value: userData?.preferences?.Activesprint?.sprintId,
-    };
-  });
+
+    const activeSprintId = userData?.preferences?.Activesprint?.sprintId;
+
+    const matchedSprint = optiondata.find(
+      (item) => item.value === activeSprintId
+    );
+
+    if (matchedSprint) {
+      setActiveSprint(matchedSprint);
+    } else {
+      setActiveSprint(null);
+    }
+  }, [SprintListItem]);
 
   useEffect(() => {
     const kanbanColumns = async () => {
@@ -83,16 +103,6 @@ function TaskPage() {
   }, []);
 
   const [stories, setStories] = useState([]);
-  console.log(stories,"stories");
-  
-
-  useEffect(() => {
-    const optiondata = SprintListItem.map((sprint) => ({
-      label: sprint?.sprintName,
-      value: sprint._id,
-    }));
-    setSprintOption(optiondata);
-  }, [SprintListItem]);
 
   useEffect(() => {
     dispatch(fetchSprintData());
@@ -106,8 +116,6 @@ function TaskPage() {
   ];
   const [selectedWorkType, setSelectedWorkType] = useState(null);
   const [clickedStory, setClickedStory] = useState("");
-  console.log(clickedStory,"clickedStorytask");
-  
   const [editModeldata, seteditModelData] = useState(false);
   const [rerender, setRerender] = useState(false);
 
@@ -119,18 +127,14 @@ function TaskPage() {
   });
 
   const handleWorkItemChange = (option, data = {}) => {
-    console.log(data?.storyId,"storyId");
-    console.log(option,"option");
-    
-    
     if (option.value == "edit_story") {
       seteditModelData(data);
     } else if (option.value == "task" || option.value == "bug") {
-       setClickedStory(data?.storyId);
-      if(option.isedit){
-  seteditModelData(data);
-      }else{
-          seteditModelData({});
+      setClickedStory(data?.storyId);
+      if (option.isedit) {
+        seteditModelData(data);
+      } else {
+        seteditModelData({});
       }
     } else {
       seteditModelData({});
@@ -142,81 +146,104 @@ function TaskPage() {
     setTaskModel(true);
   };
 
- useEffect(() => {
-  if (!location.state?.viewtask) return;
-  handleWorkItemChange(
-    {
-      value: location.state.viewtask.type,
-      isedit: true,
-    },
-    location.state.viewtask
-  );
-  navigate(location.pathname, {
-    replace: true,
-    state: null,
-  });
-}, []);
+  useEffect(() => {
+    if (!location.state?.viewtask) return;
+    handleWorkItemChange(
+      {
+        value: location.state.viewtask.type,
+        isedit: true,
+      },
+      location.state.viewtask
+    );
+    navigate(location.pathname, {
+      replace: true,
+      state: null,
+    });
+  }, []);
+
   const handleSprintChange = async (value) => {
     const res = await api.MarkDefultSprint(value?.value);
     if (res.status === 200) {
       const defaultOption = SprintOption?.find(
         (opt) => opt.value === res?.data?.data?.activesprint
       );
+
       setActiveSprint(defaultOption || null);
     }
   };
 
   useEffect(() => {
     const fetchtask = async () => {
-      const payload = {};
-      if (activeFilters.types?.length) {
-        payload.type = activeFilters.types.map((t) => t.value).join(",");
-      }
-      if (ActiveSprint) {
-        payload.sprintId = ActiveSprint.value;
-      }
-      if (activeFilters.columns?.length) {
-        payload.taskStatus = activeFilters.columns
-          .map((c) => c.value)
-          .join(",");
-      }
-      if (activeFilters.assignees?.length) {
-        payload.assignedTo = activeFilters.assignees
-          .map((a) => a.value)
-          .join(",");
-      }
-      if (activeFilters.priority?.length) {
-        payload.priority = activeFilters.priority.map((a) => a.value).join(",");
-      }
-      const response = await api.gettask(payload);
-      const data = response?.data?.data || [];
-      console.log(data, "data");
+      try {
+        setLoadingState(true);
 
-      const storiesMap = {};
-      data.forEach((item) => {
-        if (item.type === "story") {
-          storiesMap[String(item._id)] = {
-            ...item,
-            storyId: String(item._id),
-            storyTitle: item.title,
-            tasks: [],
-            bugs: [],
-          };
+        const payload = {};
+
+        if (activeFilters.types?.length) {
+          payload.type = activeFilters.types.map((t) => t.value).join(",");
         }
-      });
-      data.forEach((item) => {
-        if (item.type === "task" || item.type === "bug") {
-          const parentId = String(item.parentId);
-          if (storiesMap[parentId]) {
-            if (item.type === "task") {
-              storiesMap[parentId].tasks.push(item);
-            } else {
-              storiesMap[parentId].bugs.push(item);
+
+        if (ActiveSprint) {
+          payload.sprintId = ActiveSprint.value;
+        }
+
+        if (activeFilters.columns?.length) {
+          payload.taskStatus = activeFilters.columns
+            .map((c) => c.value)
+            .join(",");
+        }
+
+        if (activeFilters.assignees?.length) {
+          payload.assignedTo = activeFilters.assignees
+            .map((a) => a.value)
+            .join(",");
+        }
+
+        if (activeFilters.priority?.length) {
+          payload.priority = activeFilters.priority
+            .map((a) => a.value)
+            .join(",");
+        }
+
+        const response = await api.gettask(payload);
+
+        const data = response?.data?.data || [];
+
+        const storiesMap = {};
+
+        data.forEach((item) => {
+          if (item.type === "story") {
+            storiesMap[String(item._id)] = {
+              ...item,
+              storyId: String(item._id),
+              storyTitle: item.title,
+              tasks: [],
+              bugs: [],
+            };
+          }
+        });
+
+        data.forEach((item) => {
+          if (item.type === "task" || item.type === "bug") {
+            const parentId = String(item.parentId);
+
+            if (storiesMap[parentId]) {
+              if (item.type === "task") {
+                storiesMap[parentId].tasks.push(item);
+              } else {
+                storiesMap[parentId].bugs.push(item);
+              }
             }
           }
-        }
-      });
-      setStories(Object.values(storiesMap));
+        });
+
+        setStories(Object.values(storiesMap));
+      } catch (error) {
+        console.error(error);
+        setStories([]);
+      } finally {
+        setLoadingState(false);
+      }
     };
 
     fetchtask();
@@ -280,8 +307,24 @@ function TaskPage() {
     setStageColumnMOdel(true);
   };
 
+  //   const hasData = stories?.some(
+  //   (story) =>
+  //     story?.storyTitle ||
+  //     story?.tasks?.length > 0 ||
+  //     story?.bugs?.length > 0
+  // );
+
+  // if (!hasData) {
+  //   return (
+  //     <EmptyKanban
+  //       handleWorkItemChange={handleWorkItemChange}
+  //     />
+  //   );
+  // }
+
   return (
     <div style={{ padding: 20 }}>
+      {loadingState && <LoadingScreen/>}
       <div
         style={{
           display: "flex",
@@ -299,14 +342,14 @@ function TaskPage() {
           />
         </div>
         <div style={{ display: "flex", flexDirection: "row", gap: 20 }}>
-          <Button
+          <button
             onClick={() =>
               handleWorkItemChange({ label: "Story", value: "story" }, null)
             }
             className="add-btn"
           >
             + Add Story
-          </Button>
+          </button>
           <button
             style={{
               border: "none",
@@ -326,6 +369,7 @@ function TaskPage() {
           </button>
         </div>
       </div>
+
       <div
         style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}
       >

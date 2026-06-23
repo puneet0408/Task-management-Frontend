@@ -1,11 +1,12 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
+import LoadingScreen from "../Pages/loadingpage";
 
 export default function ProtectedRoute({ allowed = [] }) {
   const { currentUser , loadingsingle } = useSelector((state) => state.userListPage);
 
   if (loadingsingle) {
-    return <div>Loading...</div>;
+    return <div><LoadingScreen/></div>;
   }
 
   if (!currentUser) {

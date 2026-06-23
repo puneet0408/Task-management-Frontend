@@ -40,6 +40,8 @@ export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loginerror, setloginerror] = useState("");
 
   const {
     control,
@@ -52,22 +54,33 @@ export default function Login() {
 
   const onSubmit = async (formData) => {
     try {
+      setLoading(true);
+      setloginerror("");
+
       const res = await api.login(formData);
 
       if (res.status === 201) {
         const user = res.data.data;
+
         localStorage.setItem("userData", JSON.stringify(user));
         localStorage.setItem("role", user.role);
+
         await dispatch(fetchCurrentLogin());
+
         toast.success("Logged in successfully");
-        if (user.role === "superadmin") {
-          navigate("/company", { replace: true });
-        } else {
-          navigate("/", { replace: true });
-        }
+
+        navigate(user.role === "superadmin" ? "/company" : "/", {
+          replace: true,
+        });
       }
     } catch (err) {
-      toast.error("Invalid login details");
+      setloginerror(
+        err?.response?.data?.data?.msg ||
+          err?.response?.data?.message ||
+          "Invalid email or password"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -88,6 +101,7 @@ export default function Login() {
               <input
                 {...field}
                 type="email"
+                disabled={loading}
                 className="custom-input"
                 placeholder="john@example.com"
               />
@@ -109,6 +123,7 @@ export default function Login() {
               render={({ field }) => (
                 <input
                   {...field}
+                  disabled={loading}
                   type={showPassword ? "text" : "password"}
                   className="custom-input"
                   placeholder="••••••••"
@@ -140,9 +155,17 @@ export default function Login() {
           </div>
 
           {/* BUTTON */}
-          <button type="submit" className="custom-btn">
-            Sign in
+          <button type="submit" className="custom-btn" disabled={loading}>
+            {loading ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-50"></span>
+                Signing In...
+              </>
+            ) : (
+              "Sign In"
+            )}
           </button>
+          {loginerror && <div className="login-error-box">{loginerror}</div>}
         </Form>
       </div>
     </div>

@@ -12,7 +12,7 @@ import ProtectedRoute from "./Components/ProtectedRoute";
 
 import Login from "./Pages/Login/Login";
 import PasswordCreation from "./Pages/passwordCreation/passwordCreation";
-
+import {fetchCurrentLogin , refreshSession} from "./Redux/UserSlice";
 import Dashboard from "./Pages/Dashboard/dashboard";
 import Company from "./Pages/Company/Company";
 import UserPage from "./Pages/Users/users";
@@ -26,7 +26,19 @@ import Task from "./Pages/Tasks/task";
 import Notification from "./Pages/NotificationPage/Notification";
 import Profilepage from "./Pages/AdminDasgboard/ProfilePage";
 import ResultPage from "./Pages/ResultPage/Resultpage";
+import NoPageFound from "./Pages/NoPageFount";
 export default function App() {
+    const dispatch = useDispatch();
+
+      useEffect(() => {
+    dispatch(refreshSession());
+  }, []);
+
+
+  useEffect(() => {
+    dispatch(fetchCurrentLogin());
+  }, []);
+
   return (
     <BrowserRouter>
       <Toaster position="top-right" />
@@ -50,6 +62,7 @@ export default function App() {
             <Route path="admin-dashboard" element={<AdminDashboard />} />
             <Route path="permission" element={<Permission />} />
             <Route path="profile" element={<Profilepage />} />
+            <Route path="*" element={<NoPageFound />} />
           </Route>
 
           <Route path=":companySlug/:projectId" element={<Layout />}>

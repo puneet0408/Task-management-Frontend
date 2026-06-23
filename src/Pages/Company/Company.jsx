@@ -15,7 +15,13 @@ import moment from "moment";
 import Pagination from "../../Components/Pagination/Pagination";
 import CustomTable from "../../Components/CusomTable/CustomTable";
 import Breadcrumbs from "../../Components/BreadCrumbs/Breadcrumbs";
-import { BiTrash, BiEdit } from "react-icons/bi";
+import {
+  UncontrolledDropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
+} from "reactstrap";
+import { MoreVertical, Edit, Trash } from "react-feather";
 import { Button, Badge } from "react-bootstrap";
 import useApi from "../../auth/service/useApi";
 import TableToolbar from "../../Components/Toolbox/Toolbox";
@@ -229,28 +235,33 @@ function Company() {
       ),
       selector: (row) => moment(row?.createdAt).format("DD/MM/YYYY"),
     },
-    {
-      name: "Actions",
-      width: "120px",
-      align: "center",
-      cell: (row) => (
-        <div className="table-actions">
-          <button
-            onClick={() => handleEditCompany(row)}
-            className="action-btn edit-btn"
-          >
-            <BiEdit />
-          </button>
+{
+  name: "Actions",
+  width: "80px",
+  center: true,
+  cell: (row) => (
+    <UncontrolledDropdown>
+      <DropdownToggle
+        tag="div"
+        className="btn btn-sm btn-icon cursor-pointer"
+      >
+        <MoreVertical size={16} />
+      </DropdownToggle>
 
-          <button
-            onClick={() => handleDeleteCompany(row)}
-            className="action-btn delete-btn"
-          >
-            <BiTrash />
-          </button>
-        </div>
-      ),
-    },
+      <DropdownMenu end>
+        <DropdownItem onClick={() => handleEditCompany(row)}>
+          <Edit  size={14} className="me-50" />
+          Edit
+        </DropdownItem>
+
+        <DropdownItem onClick={() => handleDeleteCompany(row)}>
+          <Trash size={14} className="me-50 text-danger" />
+          Delete
+        </DropdownItem>
+      </DropdownMenu>
+    </UncontrolledDropdown>
+  ),
+}
   ];
   useEffect(() => {
     dispatch(fetchCompanyData());
@@ -271,9 +282,9 @@ function Company() {
             { label: "List" },
           ]}
         />
-        <Button onClick={handleAddCompany} className="add-btn">
+        <button onClick={handleAddCompany} className="add-btn">
           + Add Company
-        </Button>
+        </button>
       </div>
       <TableToolbar
         searchvalue={searchvalue}

@@ -17,6 +17,7 @@ import useApi from "../../auth/service/useApi";
 import TableToolbar from "../../Components/Toolbox/Toolbox";
 import DateFilterModal from "../../Components/DateFilterModal/DateFiler";
 import Swal from "sweetalert2";
+import LoadingScreen from "../loadingpage";
 function Project() {
   const dispatch = useDispatch();
   const api = useApi();
@@ -101,6 +102,7 @@ function Project() {
 
   return (
     <div>
+      
       <div className="rowAllignment">
         <Breadcrumbs
           title={"Project List"}
