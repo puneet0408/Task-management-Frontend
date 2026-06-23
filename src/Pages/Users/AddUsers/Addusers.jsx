@@ -430,11 +430,22 @@ function AddUsers({ openAddForm, setOpenAddForm, editData, seteditData }) {
                 </Button>
               </Col>
             </Row>
-                {errorMessage ? (
-                <p style={{ color: "red"}}>{errorMessage}</p>
-              ) : (
-                ""
-              )}
+            {errorMessage && (
+              <div
+                style={{
+                  marginTop: "10px",
+                  padding: "10px",
+                  borderRadius: "6px",
+                  background: "#fff2f0",
+                  border: "1px solid #ffccc7",
+                  color: "#cf1322",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                }}
+              >
+                {errorMessage}
+              </div>
+            )}
           </Form>
         </ModalBody>
       </Modal>
