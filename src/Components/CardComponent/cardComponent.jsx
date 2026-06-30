@@ -9,9 +9,9 @@ const ProjectCard = ({ item, onEdit, onDelete, markDefault, isdefaultId }) => {
   const isDefault = item._id === isdefaultId;
 
   return (
-    <div className="pro-card">
+    <div className="pro-card"onClick={() => markDefault?.(item)} >
       <div className="pro-card-header"onClick={() => markDefault?.(item)}>
-        <h6 className="pro-card-title">
+        <h6 className="pro-card-title"onClick={() => markDefault?.(item)}>
           {item?.projectName || "Unnamed Project"}
         </h6>
         <button

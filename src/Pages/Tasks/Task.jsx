@@ -13,6 +13,8 @@ import FilterComponent from "./filter";
 import { useLocation, useNavigate } from "react-router-dom";
 import EmptyKanban from "./EmptyKanban";
 import LoadingScreen from "../loadingpage";
+import { fetchCurrentLogin } from "../../Redux/UserSlice";
+import toast from "react-hot-toast";
 
 function TaskPage() {
   const api = useApi();
@@ -31,6 +33,10 @@ function TaskPage() {
   const [userList, setUserList] = useState("");
 
   const [ActiveSprint, setActiveSprint] = useState(null);
+  const stored = localStorage.getItem("userData");
+  const userData = stored ? JSON.parse(stored) : {};
+  console.log(userData?.permission, "userData");
+
   console.log(ActiveSprint, "activesprint");
 
   useEffect(() => {
@@ -40,9 +46,6 @@ function TaskPage() {
     }));
 
     setSprintOption(optiondata);
-
-    const stored = localStorage.getItem("userData");
-    const userData = stored ? JSON.parse(stored) : {};
 
     const activeSprintId = userData?.preferences?.Activesprint?.sprintId;
 
@@ -168,6 +171,17 @@ function TaskPage() {
         (opt) => opt.value === res?.data?.data?.activesprint
       );
 
+      const updatedUser = {
+        ...userData,
+        preferences: {
+          ...userData.preferences,
+          Activesprint: {
+            sprintId: defaultOption.value,
+            sprintName: defaultOption.label,
+          },
+        },
+      };
+      localStorage.setItem("userData", JSON.stringify(updatedUser));
       setActiveSprint(defaultOption || null);
     }
   };
@@ -304,6 +318,10 @@ function TaskPage() {
   };
 
   const handleColumnStage = () => {
+    if (userData?.permission === "viewOnly") {
+      toast.error("You have view-only access.");
+      return;
+    }
     setStageColumnMOdel(true);
   };
 
@@ -322,9 +340,18 @@ function TaskPage() {
   //   );
   // }
 
+  const handleAddStory = () => {
+    if (userData?.permission === "viewOnly") {
+      toast.error("You have view-only access.");
+      return;
+    }
+
+    handleWorkItemChange({ label: "Story", value: "story" }, null);
+  };
+
   return (
     <div style={{ padding: 20 }}>
-      {loadingState && <LoadingScreen/>}
+      {loadingState && <LoadingScreen />}
       <div
         style={{
           display: "flex",
@@ -337,17 +364,45 @@ function TaskPage() {
           <Select
             options={SprintOption}
             value={ActiveSprint}
+            menuPortalTarget={document.body}
             onChange={(e) => handleSprintChange(e)}
+            styles={{
+              menuPortal: (base) => ({
+                ...base,
+                zIndex: 9999,
+              }),
+
+              control: (base, state) => ({
+                ...base,
+                borderColor: state.isFocused ? "#7367f0" : "#d1d5db",
+                boxShadow: state.isFocused ? "0 0 0 1px #2563eb" : "none",
+                "&:hover": {
+                  borderColor: "#2563eb",
+                },
+              }),
+
+              // singleValue: (base) => ({
+              //   ...base,
+              //   color: "#2563eb",
+              //   fontWeight: 600,
+              // }),
+
+              option: (base, state) => ({
+                ...base,
+                backgroundColor: state.isSelected
+                  ? "#7367f0"
+                  : state.isFocused
+                  ? "#eff6ff"
+                  : "#fff",
+                color: state.isSelected ? "#fff" : "#111827",
+                cursor: "pointer",
+              }),
+            }}
             classNamePrefix="react-select"
           />
         </div>
         <div style={{ display: "flex", flexDirection: "row", gap: 20 }}>
-          <button
-            onClick={() =>
-              handleWorkItemChange({ label: "Story", value: "story" }, null)
-            }
-            className="add-btn"
-          >
+          <button onClick={handleAddStory} className="add-btn">
             + Add Story
           </button>
           <button
@@ -382,6 +437,7 @@ function TaskPage() {
         />
       </div>
       <KanbanBoard
+        userData={userData}
         stories={stories}
         columns={columns}
         handleDragEnd={handleDragEnd}
@@ -393,6 +449,7 @@ function TaskPage() {
         columns={columns}
       />
       <Addtask
+        userData={userData}
         editModeldata={editModeldata}
         seteditModelData={seteditModelData}
         clickedStory={clickedStory}

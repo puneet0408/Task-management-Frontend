@@ -3,8 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { Row, Col, Card, CardBody } from "reactstrap";
 import { fetchUsersData } from "../../Redux/UserSlice";
 import useApi from "../../auth/service/useApi";
+import LoadingModule from "../../Components/TableLoadingModule/loadingmodule";
+import { toast } from "react-hot-toast";
 
-// ─── helpers ────────────────────────────────────────────────────────────────
+
 
 const getInitials = (name = "") =>
   name
@@ -214,7 +216,6 @@ function PermissionPage() {
   const [permissions, setPermissions] = useState({});
   // snapshot saved to server
   const [savedPermissions, setSavedPermissions] = useState({});
-  const [toast, setToast] = useState({ visible: false, message: "" });
 
   // fetch users on mount
   useEffect(() => {
@@ -242,10 +243,6 @@ function PermissionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allUserListItems]);
 
-  const showToast = (message) => {
-    setToast({ visible: true, message });
-    setTimeout(() => setToast({ visible: false, message: "" }), 2500);
-  };
 
   const handlePermChange = (userId, value) => {
     setPermissions((prev) => ({ ...prev, [userId]: value }));
@@ -258,7 +255,7 @@ function PermissionPage() {
       );
 
       if (changed.length === 0) {
-        showToast("No changes to save.");
+        toast.success("No changes to save.");
         return;
       }
       await Promise.all(
@@ -268,16 +265,16 @@ function PermissionPage() {
       );
 
       setSavedPermissions({ ...permissions });
-      showToast("Permissions saved successfully.");
+      toast.success("Permissions saved successfully.");
     } catch (err) {
       console.error("Failed to save permissions:", err);
-      showToast("Failed to save. Please try again.");
+      toast.error("Failed to save. Please try again.");
     }
   };
 
   const handleReset = () => {
     setPermissions({ ...savedPermissions });
-    showToast("Permissions reset.");
+    toast.success("Permissions reset.");
   };
 
   // ── render ────────────────────────────────────────────────────────────────
@@ -318,7 +315,7 @@ function PermissionPage() {
 
             {/* table */}
             {loading ? (
-              <div style={styles.loadingState}>Loading users…</div>
+              <LoadingModule/>
             ) : allUserListItems.length === 0 ? (
               <div style={styles.emptyState}>No users found.</div>
             ) : (
@@ -442,23 +439,6 @@ function PermissionPage() {
           </CardBody>
         </Card>
       </Col>
-
-      {/* toast notification */}
-      <div style={styles.toast(toast.visible)}>
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-        {toast.message}
-      </div>
     </Row>
   );
 }

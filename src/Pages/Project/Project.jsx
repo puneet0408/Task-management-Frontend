@@ -17,7 +17,7 @@ import useApi from "../../auth/service/useApi";
 import TableToolbar from "../../Components/Toolbox/Toolbox";
 import DateFilterModal from "../../Components/DateFilterModal/DateFiler";
 import Swal from "sweetalert2";
-import LoadingScreen from "../loadingpage";
+import LoadingModule from "../../Components/TableLoadingModule/loadingmodule";
 function Project() {
   const dispatch = useDispatch();
   const api = useApi();
@@ -29,6 +29,7 @@ function Project() {
     searchvalue,
     sortDirection,
     sortFIeld,
+    loading,
   } = useSelector((state) => state.Projectcardpage);
   const { currentUser } = useSelector((state) => state.userListPage);
   const [isdefaultProject, setIsDefaultProject] = useState("");
@@ -68,7 +69,7 @@ function Project() {
       if (result.isConfirmed) {
         try {
           let res = await api.DeleteProject(row._id);
-          if (res.data.data.status == 201) {
+          if (res.data.status == 200) {
             Swal.fire("Deleted!", "Project deleted successfully.", "success");
             dispatch(fetchProjectData());
           }
@@ -102,12 +103,11 @@ function Project() {
 
   return (
     <div>
-      
       <div className="rowAllignment">
         <Breadcrumbs
           title={"Project List"}
           items={[
-            { label: "Dashboard", path: "/dashboard" },
+            { label: "Dashboard", path: "/admin-dashboard" },
             { label: "Project", path: "/projects" },
             { label: "Card" },
           ]}
@@ -130,7 +130,7 @@ function Project() {
                 "limit",
                 "sortFIeld",
                 "sortDirection",
-              ].includes(key),
+              ].includes(key)
           )
           .map(([key, value]) => (
             <span
@@ -158,7 +158,7 @@ function Project() {
               "limit",
               "sortFIeld",
               "sortDirection",
-            ].includes(key),
+            ].includes(key)
         ) && (
           <span
             className="badge"
@@ -181,7 +181,7 @@ function Project() {
                   limit: 2,
                   sortFIeld: null,
                   sortDirection: null,
-                }),
+                })
               )
             }
           >
@@ -189,57 +189,62 @@ function Project() {
           </span>
         )}
       </div>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "16px",
-          alignItems: "flex-start",
-        }}
-      >
-        {ProjectCardItem?.map((item) => (
-          <ProjectCard
-            key={item._id}
-            item={item}
-            isdefaultId={isdefaultProject}
-            onEdit={handleEditProject}
-            onDelete={handleDeleteCompany}
-            markDefault={handleDefaultProject}
-          />
-        ))}
-        <div
-          onClick={handleAddProject}
-          style={{
-            width: "220px",
-            height: "140px",
-            border: "2px dashed #cbd5e1",
-            borderRadius: "12px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            background: "#f8fafc",
-          }}
-        >
+      {loading ? (
+        <LoadingModule />
+      ) : (
+        <>
           <div
             style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              border: "2px solid #6366f1",
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "26px",
-              fontWeight: "600",
-              color: "#6366f1",
+              flexWrap: "wrap",
+              gap: "16px",
+              alignItems: "flex-start",
             }}
           >
-            +
+            {ProjectCardItem?.map((item) => (
+              <ProjectCard
+                key={item._id}
+                item={item}
+                isdefaultId={isdefaultProject}
+                onEdit={handleEditProject}
+                onDelete={handleDeleteCompany}
+                markDefault={handleDefaultProject}
+              />
+            ))}
+            <div
+              onClick={handleAddProject}
+              style={{
+                width: "220px",
+                height: "140px",
+                border: "2px dashed #cbd5e1",
+                borderRadius: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                background: "#f8fafc",
+              }}
+            >
+              <div
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  border: "2px solid #6366f1",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "26px",
+                  fontWeight: "600",
+                  color: "#6366f1",
+                }}
+              >
+                +
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-
+        </>
+      )}
       <AddProject
         openAddForm={openAddForm}
         setOpenAddForm={setOpenAddForm}

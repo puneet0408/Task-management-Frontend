@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { useParams, useLocation } from "react-router-dom";
 import {
   fetchSprintData,
   setDateFrom,
@@ -21,9 +22,17 @@ import useApi from "../../auth/service/useApi";
 import TableToolbar from "../../Components/Toolbox/Toolbox";
 import AddSprint from "./AddSprint";
 import DateFilterModal from "../../Components/DateFilterModal/DateFiler";
-import LoadingScreen from "../loadingpage";
 import Swal from "sweetalert2";
 function SprintPage() {
+  const { currentUser } = useSelector((state) => state.userListPage);
+  const location = useLocation();
+
+  const parts = location.pathname.split("/").filter(Boolean);
+
+  const company = parts[0];
+  const project = parts[1];
+  const page = parts[2];
+
   const dispatch = useDispatch();
   const api = useApi();
   const {
@@ -67,8 +76,7 @@ function SprintPage() {
       if (result.isConfirmed) {
         try {
           let res = await api.DeleteSprint(row._id);
-
-          if (res.data.data.status == 201) {
+          if (res.status == 200) {
             Swal.fire("Deleted!", "sprint deleted successfully.", "success");
             dispatch(fetchSprintData());
           }
@@ -219,12 +227,11 @@ function SprintPage() {
 
   return (
     <div>
-      {loading && <LoadingScreen />}
       <div className="rowAllignment">
         <Breadcrumbs
           title={"Sprint"}
           items={[
-            { label: "Dashboard", path: "/dashboard" },
+            { label: "Dashboard", path: `/${company}/${project}/dashboard` },
             { label: "Sprint", path: "/sprint" },
             { label: "List" },
           ]}
@@ -309,34 +316,38 @@ function SprintPage() {
           </span>
         )}
       </div>
+      {loading ? (
+        <LoadingModule />
+      ) : (
+        <>
+          <CustomTable
+            columns={columns}
+            data={
+              SprintListItem?.length
+                ? sortFIeld === "sno" && sortDirection === "desc"
+                  ? SprintListItem.slice()
+                      .reverse()
+                      .map((item, i) => ({
+                        ...item,
+                        sno: totalDataCount - (params.offset + i),
+                      }))
+                  : SprintListItem.slice().map((item, i) => ({
+                      ...item,
+                      sno: Number(params.offset + i + 1),
+                    }))
+                : []
+            }
+          />
 
-      <CustomTable
-        columns={columns}
-        data={
-          SprintListItem?.length
-            ? sortFIeld === "sno" && sortDirection === "desc"
-              ? SprintListItem.slice()
-                  .reverse()
-                  .map((item, i) => ({
-                    ...item,
-                    sno: totalDataCount - (params.offset + i),
-                  }))
-              : SprintListItem.slice().map((item, i) => ({
-                  ...item,
-                  sno: Number(params.offset + i + 1),
-                }))
-            : []
-        }
-      />
-
-      <Pagination
-        currentOffset={params.offset}
-        totalCount={totalDataCount}
-        limit={params.limit}
-        onOffsetChange={(offset) => dispatch(setParams({ offset }))}
-        onLimitChange={(limit) => dispatch(setParams({ offset: 0, limit }))}
-      />
-
+          <Pagination
+            currentOffset={params.offset}
+            totalCount={totalDataCount}
+            limit={params.limit}
+            onOffsetChange={(offset) => dispatch(setParams({ offset }))}
+            onLimitChange={(limit) => dispatch(setParams({ offset: 0, limit }))}
+          />
+        </>
+      )}
       <AddSprint
         openAddForm={openAddForm}
         setOpenAddForm={setOpenAddForm}

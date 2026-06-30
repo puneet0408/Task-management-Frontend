@@ -29,6 +29,7 @@ export default function KanbanBoard({
   columns,
   handleDragEnd,
   handleWorkItemChange,
+  userData,
 }) {
   const countTasksInColumn = (story, colId) =>
     story.tasks?.filter((t) => t.taskStatus === colId).length ?? 0;
@@ -48,13 +49,10 @@ export default function KanbanBoard({
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
 
-  
   const hasData = stories?.some(
-  (story) =>
-    story?.storyTitle ||
-    story?.tasks?.length > 0 ||
-    story?.bugs?.length > 0
-);
+    (story) =>
+      story?.storyTitle || story?.tasks?.length > 0 || story?.bugs?.length > 0
+  );
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -115,43 +113,42 @@ export default function KanbanBoard({
           ))}
         </div>
 
-              {hasData ? (
-  stories.map((story) => (
-    <div
-      key={story.storyId}
-      style={{
-        display: "flex",
-        borderBottom: "1px solid #e5e7eb",
-      }}
-    >
-    </div>
-  ))
-) : (
-  <div
-    style={{
-      background: "#fff",
-      padding: "80px 20px",
-      textAlign: "center",
-      minHeight: "400px",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-    }}
-  >
-    <h3
-      style={{
-        fontSize: 22,
-        fontWeight: 600,
-        color: "#111827",
-        marginBottom: 8,
-      }}
-    >
-      No Work Items Found
-    </h3>
-  </div>
-)}
-        
+        {hasData ? (
+          stories.map((story) => (
+            <div
+              key={story.storyId}
+              style={{
+                display: "flex",
+                borderBottom: "1px solid #e5e7eb",
+              }}
+            ></div>
+          ))
+        ) : (
+          <div
+            style={{
+              background: "#fff",
+              padding: "80px 20px",
+              textAlign: "center",
+              minHeight: "400px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: 22,
+                fontWeight: 600,
+                color: "#111827",
+                marginBottom: 8,
+              }}
+            >
+              No Work Items Found
+            </h3>
+          </div>
+        )}
+
         {stories.map((story) => (
           <div
             key={story.storyId}
@@ -180,7 +177,7 @@ export default function KanbanBoard({
                   justifyContent: "space-between",
                 }}
               >
-                <span
+                {/* <span
                   style={{
                     fontSize: 10,
                     fontWeight: 600,
@@ -193,8 +190,35 @@ export default function KanbanBoard({
                     width: "fit-content",
                   }}
                 >
-                  {story.storyId}
-                </span>
+                 TaskId #{story.taskId}
+                </span> */}
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#111827",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {story.taskId}{" "}
+                  <span
+                    style={{
+                      fontWeight: 400,
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.textDecoration = "underline";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.textDecoration = "none";
+                    }}
+                    onClick={() =>
+                      handleWorkItemChange({ value: "edit_story" }, story)
+                    }
+                  >
+                    {story.storyTitle}
+                  </span>
+                </div>
                 <div style={{ position: "relative" }}>
                   <CiMenuKebab
                     style={{ cursor: "pointer" }}
@@ -224,7 +248,7 @@ export default function KanbanBoard({
                         border: "1px solid #e5e7eb",
                         borderRadius: "6px",
                         boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-                        zIndex: 9999,
+                        zIndex: 999,
                         minWidth: "120px",
                       }}
                     >
@@ -236,36 +260,36 @@ export default function KanbanBoard({
                       >
                         View
                       </div>
-                      <div
-                        onClick={() =>
-                          handleWorkItemChange({ value: "task" , isedit:false }, story)
-                        }
-                        style={menuItemStyle}
-                      >
-                        New Task
-                      </div>
-                      <div
-                        onClick={() =>
-                          handleWorkItemChange({ value: "bug" , isedit:false }, story)
-                        }
-                        style={menuItemStyle}
-                      >
-                        Bug
-                      </div>
-                      <div style={menuItemStyle}>Delete</div>
+                      {userData?.permission === "allowAction" ? (
+                        <>
+                          <div
+                            onClick={() =>
+                              handleWorkItemChange(
+                                { value: "task", isedit: false },
+                                story
+                              )
+                            }
+                            style={menuItemStyle}
+                          >
+                            New Task
+                          </div>
+                          <div
+                            onClick={() =>
+                              handleWorkItemChange(
+                                { value: "bug", isedit: false },
+                                story
+                              )
+                            }
+                            style={menuItemStyle}
+                          >
+                            Bug
+                          </div>
+                          <div style={menuItemStyle}>Delete</div>
+                        </>
+                      ) : null}
                     </div>
                   )}
                 </div>
-              </div>
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "#111827",
-                  lineHeight: 1.4,
-                }}
-              >
-                {story.storyTitle}
               </div>
               {story.assignedTo && (
                 <div
@@ -297,12 +321,12 @@ export default function KanbanBoard({
                       .slice(0, 2)
                       .toUpperCase()}
                   </div>
-                  <span style={{ fontSize: 11, color: "#6b7280" }}>
-                    {story.assignedTo}
+                  <span style={{ fontSize: 12, color: "#000" , fontWeight: 600, }}>
+                    {story?.user?.name}
                   </span>
                 </div>
               )}
-              <div
+              {/* <div
                 style={{
                   position: "absolute",
                   bottom: "8px",
@@ -311,10 +335,11 @@ export default function KanbanBoard({
                 }}
               >
                 <IoIosArrowDown />
-              </div>
+              </div> */}
             </div>
             {columns.map((col, i) => (
               <Column
+                userData={userData}
                 storyId={story.storyId}
                 handleWorkItemChange={handleWorkItemChange}
                 key={col.id}

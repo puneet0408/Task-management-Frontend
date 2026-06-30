@@ -269,9 +269,8 @@ function AddTask({
   seteditModelData,
   userList,
   setRerender,
+  userData,
 }) {
-console.log(clickedStory,"clickedStory");
-
   const api = useApi();
   const dispatch = useDispatch();
   const { SprintListItem } = useSelector((s) => s.SprintListPAge);
@@ -296,6 +295,7 @@ console.log(clickedStory,"clickedStory");
   const MAX_CHARS = 280;
   const [commentList, setCommentList] = useState([]);
   const { currentUser } = useSelector((state) => state.userListPage);
+  const projectId = currentUser?.preferences?.activeProject?.projectId;
   const commentEndRef = useRef();
 
   useEffect(() => {
@@ -505,18 +505,27 @@ console.log(clickedStory,"clickedStory");
     dispatch(fetchUsersData());
   }, [openTaskModel]);
 
-  useEffect(() => {
-    if (!Array.isArray(userList)) return;
+useEffect(() => {
+  if (!Array.isArray(userList) || !projectId) return;
 
-    const options = userList
-      .filter((u) => u?._id)
-      .map((u) => ({
-        label: u.name || "Unnamed",
-        value: u._id,
-      }));
+  const options = userList
+    .filter((user) => {
+      if (!user?._id) return false;
+      if (["admin"].includes(user.role)) {
+        return true;
+      }
+      return (
+        Array.isArray(user.project_name) &&
+        user.project_name.includes(projectId)
+      );
+    })
+    .map((user) => ({
+      label: user.name || "Unnamed",
+      value: user._id,
+    }));
 
-    setAssignOptions(options);
-  }, [userList]);
+  setAssignOptions(options);
+}, [userList, projectId]);
 
   useEffect(() => {
     const getTags = async () => {
@@ -647,10 +656,10 @@ console.log(clickedStory,"clickedStory");
         res = await api.createTask(createPayload);
       }
       if (res.status === 200 || res.status === 201) {
-        console.log(res,"res");
+        console.log(res, "res");
         const updatetaskId = res?.data?.data?.updateData?._id;
         const taskId = res?.data?.task?._id;
-        
+
         const activityPayload = {
           taskId: editModeldata._id ? updatetaskId : taskId,
           action: editModeldata._id ? "update" : "create",
@@ -886,13 +895,17 @@ console.log(clickedStory,"clickedStory");
                     {/* Header */}
                     <div style={s.header}>
                       <div style={s.cardTitle}>Attachments</div>
-                      <button
-                        type="button"
-                        style={s.uploadBtn}
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        + Upload
-                      </button>
+                      {userData?.permission === "allowAction" ? (
+                        <button
+                          type="button"
+                          style={s.uploadBtn}
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          + Upload
+                        </button>
+                      ) : (
+                        ""
+                      )}
                     </div>
                     <input
                       type="file"
@@ -1020,13 +1033,17 @@ console.log(clickedStory,"clickedStory");
                     {/* Header */}
                     <div style={s.header}>
                       <div style={s.cardTitle}>Sub Task</div>
-                      <button
-                        type="button"
-                        style={s.uploadBtn}
-                        onClick={() => setShowInput(true)}
-                      >
-                        Add Sub Task
-                      </button>
+                      {userData?.permission === "allowAction" ? (
+                        <button
+                          type="button"
+                          style={s.uploadBtn}
+                          onClick={() => setShowInput(true)}
+                        >
+                          Add Sub Task
+                        </button>
+                      ) : (
+                        ""
+                      )}
                     </div>
 
                     {/* Input Box */}
@@ -1170,40 +1187,46 @@ console.log(clickedStory,"clickedStory");
                           marginTop: "8px",
                         }}
                       >
-                        <button
-                          onClick={() => {
-                            if (!comment.trim()) return;
+                        {userData?.permission === "allowAction" ? (
+                          <button
+                            onClick={() => {
+                              if (!comment.trim()) return;
 
-                            setCommentList((prev) => [
-                              ...prev,
-                              {
-                                text: comment.trim(),
-                                userId: currentUser?._id,
-                                authorName: currentUser?.name,
+                              setCommentList((prev) => [
+                                ...prev,
+                                {
+                                  text: comment.trim(),
+                                  userId: currentUser?._id,
+                                  authorName: currentUser?.name,
 
-                                createdAt: new Date(),
-                              },
-                            ]);
+                                  createdAt: new Date(),
+                                },
+                              ]);
 
-                            setComment("");
-                          }}
-                          disabled={!comment.trim()}
-                          style={{
-                            backgroundColor: comment.trim()
-                              ? "#6366f1"
-                              : "#e5e7eb",
-                            color: comment.trim() ? "#fff" : "#9ca3af",
-                            border: "none",
-                            borderRadius: "8px",
-                            padding: "10px 12px",
-                            fontSize: "14px",
-                            fontWeight: 600,
-                            cursor: comment.trim() ? "pointer" : "not-allowed",
-                            transition: "background-color 0.2s",
-                          }}
-                        >
-                          Post
-                        </button>
+                              setComment("");
+                            }}
+                            disabled={!comment.trim()}
+                            style={{
+                              backgroundColor: comment.trim()
+                                ? "#6366f1"
+                                : "#e5e7eb",
+                              color: comment.trim() ? "#fff" : "#9ca3af",
+                              border: "none",
+                              borderRadius: "8px",
+                              padding: "10px 12px",
+                              fontSize: "14px",
+                              fontWeight: 600,
+                              cursor: comment.trim()
+                                ? "pointer"
+                                : "not-allowed",
+                              transition: "background-color 0.2s",
+                            }}
+                          >
+                            Post
+                          </button>
+                        ) : (
+                          ""
+                        )}
                       </div>
                     </div>
                     <div
@@ -1521,24 +1544,28 @@ console.log(clickedStory,"clickedStory");
           >
             Cancel
           </Button>
-          <Button
-            color="primary"
-            onClick={handleSubmit(onSubmit)}
-            disabled={isSubmitting || isUploading}
-            style={{ fontSize: "13px", padding: "7px 20px", fontWeight: 600 }}
-          >
-            {isSubmitting ? (
-              <>
-                <span
-                  className="spinner-border spinner-border-sm me-2"
-                  style={{ width: 13, height: 13 }}
-                />
-                Saving...
-              </>
-            ) : (
-              `Save ${meta.label}`
-            )}
-          </Button>
+          {userData?.permission === "allowAction" ? (
+            <Button
+              color="primary"
+              onClick={handleSubmit(onSubmit)}
+              disabled={isSubmitting || isUploading}
+              style={{ fontSize: "13px", padding: "7px 20px", fontWeight: 600 }}
+            >
+              {isSubmitting ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    style={{ width: 13, height: 13 }}
+                  />
+                  Saving...
+                </>
+              ) : (
+                `Save ${meta.label}`
+              )}
+            </Button>
+          ) : (
+            ""
+          )}
         </ModalFooter>
       </Modal>
       {previewFile && (

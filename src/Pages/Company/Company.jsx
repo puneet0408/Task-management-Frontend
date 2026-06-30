@@ -28,6 +28,7 @@ import TableToolbar from "../../Components/Toolbox/Toolbox";
 import AddCompany from "./AddCompany/AddCompany";
 import DateFilterModal from "../../Components/DateFilterModal/DateFiler";
 import Swal from "sweetalert2";
+import LoadingModule from "../../Components/TableLoadingModule/loadingmodule";
 function Company() {
   const dispatch = useDispatch();
   const api = useApi();
@@ -40,6 +41,7 @@ function Company() {
     sortDirection,
     sortFIeld,
     totalDataCount,
+    loading,
   } = useSelector((state) => state.companyListPage);
   const [openAddForm, setOpenAddForm] = useState(false);
   const [editData, seteditData] = useState(null);
@@ -71,7 +73,6 @@ function Company() {
       if (result.isConfirmed) {
         try {
           let res = await api.DeleteCompanyData(row._id);
-
           if (res.data.data.status == 201) {
             Swal.fire("Deleted!", "Company deleted successfully.", "success");
             dispatch(fetchCompanyData());
@@ -107,7 +108,7 @@ function Company() {
           )}
         </span>
       ),
-       cell: (row) => row.sno,
+      cell: (row) => row.sno,
       width: "80px",
     },
     {
@@ -235,33 +236,33 @@ function Company() {
       ),
       selector: (row) => moment(row?.createdAt).format("DD/MM/YYYY"),
     },
-{
-  name: "Actions",
-  width: "80px",
-  center: true,
-  cell: (row) => (
-    <UncontrolledDropdown>
-      <DropdownToggle
-        tag="div"
-        className="btn btn-sm btn-icon cursor-pointer"
-      >
-        <MoreVertical size={16} />
-      </DropdownToggle>
+    {
+      name: "Actions",
+      width: "80px",
+      center: true,
+      cell: (row) => (
+        <UncontrolledDropdown>
+          <DropdownToggle
+            tag="div"
+            className="btn btn-sm btn-icon cursor-pointer"
+          >
+            <MoreVertical size={16} />
+          </DropdownToggle>
 
-      <DropdownMenu end>
-        <DropdownItem onClick={() => handleEditCompany(row)}>
-          <Edit  size={14} className="me-50" />
-          Edit
-        </DropdownItem>
+          <DropdownMenu end>
+            <DropdownItem onClick={() => handleEditCompany(row)}>
+              <Edit size={14} className="me-50" />
+              Edit
+            </DropdownItem>
 
-        <DropdownItem onClick={() => handleDeleteCompany(row)}>
-          <Trash size={14} className="me-50 text-danger" />
-          Delete
-        </DropdownItem>
-      </DropdownMenu>
-    </UncontrolledDropdown>
-  ),
-}
+            <DropdownItem onClick={() => handleDeleteCompany(row)}>
+              <Trash size={14} className="me-50 text-danger" />
+              Delete
+            </DropdownItem>
+          </DropdownMenu>
+        </UncontrolledDropdown>
+      ),
+    },
   ];
   useEffect(() => {
     dispatch(fetchCompanyData());
@@ -351,7 +352,7 @@ function Company() {
                   dateFrom: null,
                   dateTo: null,
                   offset: 0,
-                  limit: 2,
+                  limit: 10,
                   sortFIeld: null,
                   sortDirection: null,
                 })
@@ -362,33 +363,39 @@ function Company() {
           </span>
         )}
       </div>
-      <CustomTable
-        columns={columns}
-        data={
-          allListItems?.length
-            ? sortFIeld === "sno" && sortDirection === "desc"
-              ? allListItems
-                  .slice()
-                  .reverse()
-                  .map((item, i) => ({
-                    ...item,
-                    sno: totalDataCount - (params.offset + i),
-                  }))
-              : allListItems.slice().map((item, i) => ({
-                  ...item,
-                 sno: Number(params.offset + i + 1),
-                }))
-            : []
-        }
-      />
+      {loading ? (
+        <LoadingModule />
+      ) : (
+        <>
+          <CustomTable
+            columns={columns}
+            data={
+              allListItems?.length
+                ? sortFIeld === "sno" && sortDirection === "desc"
+                  ? allListItems
+                      .slice()
+                      .reverse()
+                      .map((item, i) => ({
+                        ...item,
+                        sno: totalDataCount - (params.offset + i),
+                      }))
+                  : allListItems.slice().map((item, i) => ({
+                      ...item,
+                      sno: Number(params.offset + i + 1),
+                    }))
+                : []
+            }
+          />
 
-      <Pagination
-        currentOffset={params.offset}
-        totalCount={totalDataCount}
-        limit={params.limit}
-        onOffsetChange={(offset) => dispatch(setParams({ offset }))}
-        onLimitChange={(limit) => dispatch(setParams({ offset: 0, limit }))}
-      />
+          <Pagination
+            currentOffset={params.offset}
+            totalCount={totalDataCount}
+            limit={params.limit}
+            onOffsetChange={(offset) => dispatch(setParams({ offset }))}
+            onLimitChange={(limit) => dispatch(setParams({ offset: 0, limit }))}
+          />
+        </>
+      )}
       <AddCompany
         openAddForm={openAddForm}
         setOpenAddForm={setOpenAddForm}

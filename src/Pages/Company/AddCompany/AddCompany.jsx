@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import {
   Modal,
   ModalHeader,
@@ -25,6 +25,8 @@ import useApi from "../../../auth/service/useApi";
 function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
   const api = useApi();
   const toggle = () => setOpenAddForm(!openAddForm);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const defaultValues = {
     owner_name: "",
@@ -104,11 +106,14 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
     reset(defaultValues);
     setOpenAddForm(false);
     seteditData(null);
+    setErrorMessage("");
   };
 
   const onSubmit = async (formData) => {
     let res;
     try {
+      setLoading(true);
+      setErrorMessage("");
       const formattedPhone = formData.contact_no
         ? String(formData.contact_no).startsWith("+")
           ? String(formData.contact_no)
@@ -136,6 +141,7 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
         res = await api.editCompanyData(payload, editData._id);
       }
       if (res.data.data.status == 201) {
+        setLoading(false);
         toast.success(
           isEdit
             ? "Company updated successfully"
@@ -146,7 +152,10 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
         seteditData(null);
       }
     } catch (err) {
-      toast.error("Something went wrong");
+      setLoading(false);
+      setErrorMessage(
+        err?.response?.data?.data?.msg || "internal server error"
+      );
     }
   };
 
@@ -167,7 +176,9 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
             </button>
           }
         >
-          <h5 className="modal-title">Add Company</h5>
+          <h5 className="modal-title">
+            {editData ? "Edit Company" : "Add Company"}
+          </h5>
         </ModalHeader>
 
         <ModalBody>
@@ -279,6 +290,7 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
                     <Input
                       {...field}
                       className="form-input"
+                      min={1}
                       type="number"
                       placeholder="Enter number of users"
                     />
@@ -290,10 +302,12 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
                 <Controller
                   name="no_of_project"
                   control={control}
+                  min={1}
                   render={({ field }) => (
                     <Input
                       {...field}
                       className="form-input"
+                      min={1}
                       type="number"
                       placeholder="Enter number of Project"
                     />
@@ -385,6 +399,22 @@ function AddCompany({ openAddForm, setOpenAddForm, editData, seteditData }) {
               <Col md={12} className="text-end mt-3">
                 <Button className="submit-btn">Save Company</Button>
               </Col>
+              {errorMessage && (
+                <div
+                  style={{
+                    marginTop: "10px",
+                    padding: "10px",
+                    borderRadius: "6px",
+                    background: "#fff2f0",
+                    border: "1px solid #ffccc7",
+                    color: "#cf1322",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                  }}
+                >
+                  {errorMessage}
+                </div>
+              )}
             </Row>
           </Form>
         </ModalBody>

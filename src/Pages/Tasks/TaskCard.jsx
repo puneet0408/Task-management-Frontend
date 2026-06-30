@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { CiMenuKebab } from "react-icons/ci";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { TbCalendar, TbCalendarX } from "react-icons/tb";
 
 const TYPE_META = {
-  task: { label: "Task", bg: "#eff6ff", color: "#1e40af", border: "#93c5fd" },
-  bug: { label: "Bug", bg: "#fef2f2", color: "#991b1b", border: "#fca5a5" },
-  story: { label: "Story", bg: "#f5f3ff", color: "#5b21b6", border: "#c4b5fd" },
+  task:  { label: "Task",  bg: "#ECEAFD", color: "#3C3489" },
+  bug:   { label: "Bug",   bg: "#FCEBEB", color: "#791F1F" },
+  story: { label: "Story", bg: "#E6F1FB", color: "#0C447C" },
 };
 
 const AVATAR_COLORS = [
-  { bg: "#bfdbfe", color: "#1e40af" },
-  { bg: "#d1fae5", color: "#065f46" },
-  { bg: "#fde68a", color: "#92400e" },
-  { bg: "#fce7f3", color: "#9d174d" },
-  { bg: "#e0e7ff", color: "#3730a3" },
+  { bg: "#ECEAFD", color: "#3C3489" },
+  { bg: "#E1F5EE", color: "#085041" },
+  { bg: "#FAECE7", color: "#712B13" },
+  { bg: "#FAEEDA", color: "#633806" },
+  { bg: "#E6F1FB", color: "#0C447C" },
 ];
 
 function getAvatarColor(name) {
@@ -24,37 +25,40 @@ function getAvatarColor(name) {
 
 function getInitials(name) {
   if (!name) return "—";
-  return name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 }
 
-export default function TaskCard({ task, handleWorkItemChange }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: task._id,
-    });
-  const [openMenuId, setOpenMenuId] = useState(null);
+function isOverdue(dateStr) {
+  if (!dateStr) return false;
+  return new Date(dateStr) < new Date();
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return null;
+  return new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+export default function TaskCard({ task, handleWorkItemChange, userData }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task._id });
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const meta = TYPE_META[task.type] ?? TYPE_META.task;
   const assigned = task.assignedTo;
-  const avatarColor = getAvatarColor(assigned?.label ?? assigned);
-  const initials = getInitials(assigned?.label ?? assigned);
   const isUnassigned = !assigned || assigned?.value === null;
+  const avatarColor = getAvatarColor(task?.user?.name);
+  const initials = getInitials(task?.user?.name);
+  const overdue = isOverdue(task.due_date);
 
   useEffect(() => {
-    const handleClickOutside = () => setOpenMenuId(null);
-    window.addEventListener("click", handleClickOutside);
-    return () => window.removeEventListener("click", handleClickOutside);
+    const close = () => setMenuOpen(false);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
   }, []);
 
   const handleCardClick = (e) => {
     e.stopPropagation();
     if (isDragging) return;
-    handleWorkItemChange({ value: task?.type , isedit:true }, task);
+    handleWorkItemChange({ value: task?.type, isedit: true }, task);
   };
 
   return (
@@ -63,161 +67,140 @@ export default function TaskCard({ task, handleWorkItemChange }) {
       onClick={handleCardClick}
       style={{
         background: "#fff",
-        border: "1px solid #e5e7eb",
-        borderRadius: 8,
-        padding: "10px 12px",
-        cursor: "default", // important
+        border: "0.5px solid #e5e7eb",
+        borderRadius: 10,
+        padding: "12px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        cursor: "pointer",
         opacity: isDragging ? 0.5 : 1,
-        transform: transform
-          ? `translate(${transform.x}px, ${transform.y}px)`
-          : undefined,
-        transition: isDragging
-          ? "none"
-          : "border-color 0.15s, box-shadow 0.15s",
-        boxShadow: isDragging ? "0 4px 12px rgba(0,0,0,0.12)" : "none",
+        transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+        transition: isDragging ? "none" : "border-color 0.15s, box-shadow 0.15s",
+        boxShadow: isDragging ? "0 4px 16px rgba(0,0,0,0.12)" : "none",
         userSelect: "none",
       }}
-      onMouseEnter={(e) => {
-        if (!isDragging) e.currentTarget.style.borderColor = "#93c5fd";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "#e5e7eb";
-      }}
+      onMouseEnter={(e) => { if (!isDragging) e.currentTarget.style.borderColor = "#7367f0"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e5e7eb"; }}
     >
-      {/* HEADER */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 7,
-        }}
-      >
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            padding: "2px 7px",
-            borderRadius: 999,
-            background: meta.bg,
-            color: meta.color,
-            border: `0.5px solid ${meta.border}`,
-          }}
-        >
+
+      {/* header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{
+          fontSize: 11, fontWeight: 500, padding: "2px 8px",
+          borderRadius: 20, background: meta.bg, color: meta.color,
+        }}>
           {meta.label}
         </span>
 
-        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-          <div
-            {...listeners}
-            {...attributes}
-            style={{
-              cursor: "grab",
-              padding: "2px 6px",
-              background: "#f3f4f6",
-              borderRadius: "4px",
-              fontSize: "12px",
-            }}
-          >
-            ⠿
-          </div>
-
-          {/* MENU */}
-          <div style={{ position: "relative" }}>
-            <CiMenuKebab
-              style={{ cursor: "pointer" }}
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                setOpenMenuId(openMenuId === task._id ? null : task._id);
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          {userData?.permission === "allowAction" && (
+            <div
+              {...listeners} {...attributes}
+              style={{
+                cursor: "grab", color: "#aaa", fontSize: 15,
+                padding: "2px 4px", borderRadius: 4, lineHeight: 1,
               }}
-            />
+              title="Drag to move"
+            >
+              ⠿
+            </div>
+          )}
 
-            {openMenuId === task._id && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "20px",
-                  right: 0,
-                  background: "#fff",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "6px",
-                  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-                  zIndex: 1000,
-                  minWidth: "120px",
-                }}
-              >
+          {/* three dot menu */}
+          <div style={{ position: "relative" }}>
+            <button
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); setMenuOpen((p) => !p); }}
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                color: "#aaa", padding: "2px 4px", borderRadius: 4,
+                display: "flex", alignItems: "center",
+              }}
+            >
+              <BsThreeDotsVertical size={14} />
+            </button>
+
+            {menuOpen && (
+              <div style={{
+                position: "absolute", top: 24, right: 0,
+                background: "#fff", border: "0.5px solid #e5e7eb",
+                borderRadius: 8, boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
+                zIndex: 1000, minWidth: 130, padding: "4px 0",
+              }}>
                 <div
                   onPointerDown={(e) => e.stopPropagation()}
-                  style={{ padding: "8px 12px", cursor: "pointer" }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleWorkItemChange({ value: task?.type , isedit:true }, task);
-                  }}
+                  onClick={(e) => { e.stopPropagation(); handleWorkItemChange({ value: task?.type, isedit: true }, task); setMenuOpen(false); }}
+                  style={menuItemStyle}
                 >
                   View
                 </div>
-
-                <div
-                  onPointerDown={(e) => e.stopPropagation()}
-                  style={{ padding: "8px 12px", cursor: "pointer" }}
-                >
-                  Delete
-                </div>
+                {userData?.permission === "allowAction" && (
+                  <div
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ ...menuItemStyle, color: "#E24B4A" }}
+                  >
+                    Delete
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* TITLE */}
-      <div
-        style={{
-          fontSize: 12,
-          fontWeight: 500,
-          color: "#111827",
-          lineHeight: 1.45,
-          marginBottom: 10,
-        }}
-      >
+      {/* title */}
+      <p style={{ fontSize: 13, fontWeight: 500, color: "#111827", lineHeight: 1.45, margin: 0 }}>
         {task.title}
-      </div>
+      </p>
 
-      {/* FOOTER */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingTop: 8,
-          borderTop: "0.5px solid #f3f4f6",
-        }}
-      >
-        <span
-          style={{ fontSize: 10, color: "#d1d5db", fontFamily: "monospace" }}
-        >
-          #{task._id?.slice(-6)}
+      {/* footer */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        borderTop: "0.5px solid #f3f4f6", paddingTop: 8,
+      }}>
+        <span style={{ fontSize: 11, color: "#aaa", fontFamily: "monospace" }}>
+          #{task.taskId || task._id?.slice(-6)}
         </span>
 
-        <div
-          title={isUnassigned ? "Unassigned" : assigned?.label ?? assigned}
-          style={{
-            width: 22,
-            height: 22,
-            borderRadius: "50%",
-            background: isUnassigned ? "#f3f4f6" : avatarColor.bg,
-            border: isUnassigned ? "1px dashed #d1d5db" : "none",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 9,
-            fontWeight: 700,
-            color: isUnassigned ? "#d1d5db" : avatarColor.color,
-          }}
-        >
-          {isUnassigned ? "—" : initials}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {task.due_date && (
+            <span style={{
+              fontSize: 11, display: "flex", alignItems: "center", gap: 3,
+              color: overdue ? "#E24B4A" : "#aaa",
+            }}>
+              {overdue
+                ? <TbCalendarX size={12} />
+                : <TbCalendar size={12} />
+              }
+              {formatDate(task.due_date)}
+            </span>
+          )}
+
+          <div
+            title={isUnassigned ? "Unassigned" : task?.user?.name}
+            style={{
+              width: 24, height: 24, borderRadius: "50%",
+              background: isUnassigned ? "#f3f4f6" : avatarColor.bg,
+              border: isUnassigned ? "1px dashed #d1d5db" : "none",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 9, fontWeight: 600,
+              color: isUnassigned ? "#ccc" : avatarColor.color,
+            }}
+          >
+            {isUnassigned ? "—" : initials}
+          </div>
         </div>
       </div>
+
     </div>
   );
 }
+
+const menuItemStyle = {
+  padding: "8px 14px",
+  cursor: "pointer",
+  fontSize: 13,
+  color: "#333",
+};

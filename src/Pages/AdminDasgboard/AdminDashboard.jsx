@@ -5,64 +5,71 @@ import MemberWorkload from "./Widgets/memberWorkload";
 import PriorityBreakdown from "./Widgets/criticalBreakdown";
 import CriticalTask from "./Widgets/criticalask";
 import AttachmentSubtaskCard from "./Widgets/AttachCommentSubtaskcard";
+import LoadingScreen from "../loadingpage";
 
 function Dashboard() {
   const api = useApi();
   const [summaryWidgetData, setSummaryWidgetData] = useState(null);
-
+  const [loadingState , setLoadingState] = useState(false);
   useEffect(() => {
+    setLoadingState(true);
     const fetchWidget = async () => {
       try {
         const response = await api.dashboardadminSummaryWidget();
         setSummaryWidgetData(response?.data?.data);
+        setLoadingState(false);
       } catch (err) {
         console.error(err);
+        setLoadingState(false);
       }
     };
     fetchWidget();
   }, []);
 
   return (
-    <div style={styles.page}>
-      {/* Section A */}
-      <SectionHeading title="System Overview" icon="" />
-      <SystemOverview summaryWidgetData={summaryWidgetData} type="summary" />
+    <>
+      {loadingState && <LoadingScreen />}
+      <div style={styles.page}>
+        {/* Section A */}
+        <SectionHeading title="System Overview" icon="" />
+        <SystemOverview summaryWidgetData={summaryWidgetData} type="summary" />
 
-      {/* Section B */}
-      <SectionHeading title="Member Management" icon="" subtitle="" />
-      <div style={styles.grid}>
-        <MemberWorkload
-          data={summaryWidgetData?.memberWorkload}
-          member="workload"
-        />
-        <MemberWorkload
-          data={summaryWidgetData?.createdBy}
-          member="createdBy"
-        />
-      </div>
+        {/* Section B */}
+        <SectionHeading title="Member Management" icon="" subtitle="" />
+        <div style={styles.grid}>
+          <MemberWorkload
+            data={summaryWidgetData?.memberWorkload}
+            member="workload"
+          />
+          <MemberWorkload
+            data={summaryWidgetData?.createdBy}
+            member="createdBy"
+          />
+        </div>
 
-      {/* Section C */}
-      <SectionHeading title="Task Overview" icon="" subtitle="" />
-      <SystemOverview
-        summaryWidgetData={summaryWidgetData}
-        type="taskoverview"
-      />
-      <div style={styles.grid}>
-        <PriorityBreakdown summaryWidgetData={summaryWidgetData?.byPriority} />
-        <CriticalTask data={summaryWidgetData?.criticalTasks} />
-      </div>
-      {/* section D */}
-      <SectionHeading
-        title="attachments, subtasks & comments"
-        icon=""
-        subtitle=""
-      />
-      <div style={styles.grid}>
-        <AttachmentSubtaskCard
-      data={summaryWidgetData}
+        {/* Section C */}
+        <SectionHeading title="Task Overview" icon="" subtitle="" />
+        <SystemOverview
+          summaryWidgetData={summaryWidgetData}
+          type="taskoverview"
         />
+        <div style={styles.grid}>
+          <PriorityBreakdown
+            summaryWidgetData={summaryWidgetData?.byPriority}
+          />
+          <CriticalTask data={summaryWidgetData?.criticalTasks} />
+        </div>
+        {/* section D */}
+        <SectionHeading
+          title="attachments, subtasks & comments"
+          icon=""
+          subtitle=""
+        />
+        <div style={styles.grid}>
+          <AttachmentSubtaskCard data={summaryWidgetData} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

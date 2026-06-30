@@ -24,7 +24,6 @@ import TableToolbar from "../../Components/Toolbox/Toolbox";
 import AddUsers from "./AddUsers/Addusers";
 import DateFilterModal from "../../Components/DateFilterModal/DateFiler";
 import Swal from "sweetalert2";
-import LoadingScreen from "../loadingpage";
 function UsersPage() {
   const dispatch = useDispatch();
   const api = useApi();
@@ -41,6 +40,7 @@ function UsersPage() {
     startIndex,
     lastIndex,
   } = useSelector((state) => state.userListPage);
+  console.log(allUserListItems, "allUserListItems");
 
   const [openAddForm, setOpenAddForm] = useState(false);
   const [editData, seteditData] = useState(null);
@@ -276,25 +276,18 @@ function UsersPage() {
     dispatch(fetchUsersData());
   }, [params]);
 
-  let searchTimer;
+  // let searchTimer;
   const handleSearch = (value) => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-      if (value.length > 3) {
-        dispatch(setSearchValue(value));
-        dispatch(fetchUsersData());
-      }
-    }, 500);
+    dispatch(setSearchValue(value));
+    dispatch(fetchUsersData());
   };
-
   return (
     <div>
-      {loading && <LoadingScreen />}
       <div className="rowAllignment">
         <Breadcrumbs
           title={"Users"}
           items={[
-            { label: "Dashboard", path: "/dashboard" },
+            { label: "Dashboard", path: "/admin-dashboard" },
             { label: "Users", path: "/users" },
             { label: "List" },
           ]}
@@ -379,33 +372,38 @@ function UsersPage() {
           </span>
         )}
       </div>
-
-      <CustomTable
-        columns={columns}
-        data={
-          allUserListItems?.length
-            ? sortFIeld === "sno" && sortDirection === "desc"
-              ? allUserListItems
-                  .slice()
-                  .reverse()
-                  .map((item, i) => ({
-                    ...item,
-                    sno: totalDataCount - (params.offset + i),
-                  }))
-              : allUserListItems.slice().map((item, i) => ({
-                  ...item,
-                  sno: Number(params.offset + i + 1),
-                }))
-            : []
-        }
-      />
-      <Pagination
-        currentOffset={params.offset}
-        totalCount={totalDataCount}
-        limit={params.limit}
-        onOffsetChange={(offset) => dispatch(setParams({ offset }))}
-        onLimitChange={(limit) => dispatch(setParams({ offset: 0, limit }))}
-      />
+      {loading ? (
+        <LoadingModule />
+      ) : (
+        <>
+          <CustomTable
+            columns={columns}
+            data={
+              allUserListItems?.length
+                ? sortFIeld === "sno" && sortDirection === "desc"
+                  ? allUserListItems
+                      .slice()
+                      .reverse()
+                      .map((item, i) => ({
+                        ...item,
+                        sno: totalDataCount - (params.offset + i),
+                      }))
+                  : allUserListItems.slice().map((item, i) => ({
+                      ...item,
+                      sno: Number(params.offset + i + 1),
+                    }))
+                : []
+            }
+          />
+          <Pagination
+            currentOffset={params.offset}
+            totalCount={totalDataCount}
+            limit={params.limit}
+            onOffsetChange={(offset) => dispatch(setParams({ offset }))}
+            onLimitChange={(limit) => dispatch(setParams({ offset: 0, limit }))}
+          />
+        </>
+      )}
       <AddUsers
         openAddForm={openAddForm}
         setOpenAddForm={setOpenAddForm}

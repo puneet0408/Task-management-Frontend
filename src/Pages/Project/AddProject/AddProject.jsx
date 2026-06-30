@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from "react";
+import React, { Fragment, useEffect , useState } from "react";
 import {
   Modal,
   ModalHeader,
@@ -12,7 +12,9 @@ import {
 } from "reactstrap";
 // import "./AddProject.scss";
 import { useForm, Controller } from "react-hook-form";
-import { fetchCompanyData } from "../../../Redux/CompanySlice";
+import {
+  fetchProjectData,
+} from "../../../Redux/projectSlice";
 import { useDispatch } from "react-redux";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -25,6 +27,8 @@ import useApi from "../../../auth/service/useApi";
 function AddProject({ openAddForm, setOpenAddForm, editData, seteditData }) {
   const api = useApi();
   const toggle = () => setOpenAddForm(!openAddForm);
+  const [loading, setloading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const defaultValues = {
     owner_name: "",
@@ -44,7 +48,7 @@ function AddProject({ openAddForm, setOpenAddForm, editData, seteditData }) {
     projectName: yup
       .string()
       .required("Project Name is mandatory")
-      .transform((v) => (v ? v.trim() : v))
+      .transform((v) => (v ? v.trim() : v)),
   });
   const {
     control,
@@ -76,10 +80,13 @@ function AddProject({ openAddForm, setOpenAddForm, editData, seteditData }) {
     reset(defaultValues);
     setOpenAddForm(false);
     seteditData(null);
+    setErrorMessage("");
   };
 
   const onSubmit = async (formData) => {
     let res;
+    setloading(true);
+    setErrorMessage("");
     try {
       const isEdit = editData && editData._id;
       const payload = {
@@ -92,18 +99,22 @@ function AddProject({ openAddForm, setOpenAddForm, editData, seteditData }) {
       } else {
         res = await api.editProject(payload, editData._id);
       }
-      if (res.data.status == 201) {
+      if (res.data.status == 200) {
         toast.success(
           isEdit
             ? "Project updated successfully"
             : "Project created successfully"
         );
+        setloading(false);
         handleClose();
-        dispatch(fetchCompanyData());
+        dispatch(fetchProjectData());
         seteditData(null);
       }
     } catch (err) {
-      toast.error("Something went wrong");
+      setErrorMessage(
+        err?.response?.data?.data?.msg || "internal server error"
+      );
+      setloading(false);
     }
   };
 
@@ -113,7 +124,7 @@ function AddProject({ openAddForm, setOpenAddForm, editData, seteditData }) {
         isOpen={openAddForm}
         toggle={toggle}
         backdrop={true}
-          centered
+        centered
         // modalClassName="side-modal"
         // contentClassName="side-modal-content"
       >
@@ -182,8 +193,26 @@ function AddProject({ openAddForm, setOpenAddForm, editData, seteditData }) {
                 />
               </Col>
               <Col md={12} className="text-end mt-3">
-                <Button className="submit-btn">Submit</Button>
+                <Button className="submit-btn" disabled={loading}>
+                  {loading ? "...Submiting" : "submit"}
+                </Button>
               </Col>
+              {errorMessage && (
+                <div
+                  style={{
+                    marginTop: "10px",
+                    padding: "10px",
+                    borderRadius: "6px",
+                    background: "#fff2f0",
+                    border: "1px solid #ffccc7",
+                    color: "#cf1322",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                  }}
+                >
+                  {errorMessage}
+                </div>
+              )}
             </Row>
           </Form>
         </ModalBody>

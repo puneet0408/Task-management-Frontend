@@ -43,17 +43,12 @@ function ProfilePage() {
       });
 
       const { uploadUrl, fileUrl } = res.data;
-console.log(uploadUrl, fileUrl,"uploadUrl, fileUrl");
 
       await axios.put(uploadUrl, file, {
         headers: {
           "Content-Type": file.type,
         },
       });
-console.log(file.name,
-            file.type,
-             fileUrl);
-
       await api.editUsers(
         {
           profilepic: {
@@ -64,8 +59,6 @@ console.log(file.name,
         },
         userData._id
       );
-
-      // update localstorage user data
       const updatedUser = {
         ...userData,
         profilepic: {

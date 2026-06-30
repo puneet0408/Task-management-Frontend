@@ -159,7 +159,6 @@ function AddUsers({ openAddForm, setOpenAddForm, editData, seteditData }) {
         dispatch(fetchUsersData());
       }
     } catch (err) {
-      console.log(err?.response?.data?.data?.msg);
       setErrorMessage(
         err?.response?.data?.data?.msg || "internal server error"
       );
