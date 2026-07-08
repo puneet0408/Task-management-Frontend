@@ -297,6 +297,7 @@ function AddTask({
   const { currentUser } = useSelector((state) => state.userListPage);
   const projectId = currentUser?.preferences?.activeProject?.projectId;
   const commentEndRef = useRef();
+  const [mentionedUserIds, setMentionedUserIds] = useState([]);
 
   useEffect(() => {
     commentEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1138,209 +1139,105 @@ useEffect(() => {
                     </div>
                   </div>
                 )}
-                {activeTab === "Comments" && (
-                  <div style={s.card}>
-                    <div style={s.cardTitle}>Discussion</div>
-                    <div style={{ marginBottom: "10px" }}>
-                      <div style={{ position: "relative" }}>
-                        <textarea
-                          rows={2}
-                          placeholder="Add a comment..."
-                          value={comment}
-                          onChange={(e) => {
-                            if (e.target.value.length <= MAX_CHARS)
-                              setComment(e.target.value);
-                          }}
-                          style={{
-                            ...s.input,
-                            resize: "vertical",
-                            fontFamily: "inherit",
-                            lineHeight: 1.6,
-                            width: "100%",
-                            paddingBottom: "28px",
-                            boxSizing: "border-box",
-                          }}
-                          onFocus={focusStyle}
-                          onBlur={blurStyle}
-                        />
+        {activeTab === "Comments" && (
+  <div style={s.card}>
+    <div style={s.cardTitle}>Discussion</div>
 
-                        <span
-                          style={{
-                            position: "absolute",
-                            bottom: "8px",
-                            right: "10px",
-                            fontSize: "11px",
-                            color:
-                              comment.length >= MAX_CHARS
-                                ? "#ef4444"
-                                : "#9ca3af",
-                          }}
-                        >
-                          {comment.length}/{MAX_CHARS}
-                        </span>
-                      </div>
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ position: "relative" }}>
+        <MentionInput
+          value={comment}
+          onChange={(val, mentionedMember) => {
+            if (val.length <= MAX_CHARS) {
+              setComment(val);
+              if (mentionedMember) {
+                setMentionedUserIds((prev) => {
+                  const alreadyAdded = prev.find((id) => id === mentionedMember.value);
+                  return alreadyAdded ? prev : [...prev, mentionedMember.value];
+                });
+              }
+            }
+          }}
+          projectMembers={assignOptions}
+        />
+        <span style={{
+          position: "absolute", bottom: 8, right: 10,
+          fontSize: 11,
+          color: comment.length >= MAX_CHARS ? "#ef4444" : "#9ca3af",
+        }}>
+          {comment.length}/{MAX_CHARS}
+        </span>
+      </div>
 
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          marginTop: "8px",
-                        }}
-                      >
-                        {userData?.permission === "allowAction" ? (
-                          <button
-                            onClick={() => {
-                              if (!comment.trim()) return;
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+        {userData?.permission === "allowAction" && (
+          <button
+            onClick={() => {
+              if (!comment.trim()) return;
+              setCommentList((prev) => [...prev, {
+                text: comment.trim(),
+                userId: currentUser?._id,
+                authorName: currentUser?.name,
+                mentionedUserIds,       
+                createdAt: new Date(),
+              }]);
+              setComment("");
+              setMentionedUserIds([]);
+            }}
+            disabled={!comment.trim()}
+            style={{
+              backgroundColor: comment.trim() ? "#7367f0" : "#e5e7eb",
+              color: comment.trim() ? "#fff" : "#9ca3af",
+              border: "none", borderRadius: 8,
+              padding: "8px 16px", fontSize: 13,
+              fontWeight: 600, cursor: comment.trim() ? "pointer" : "not-allowed",
+            }}
+          >
+            Post
+          </button>
+        )}
+      </div>
+    </div>
 
-                              setCommentList((prev) => [
-                                ...prev,
-                                {
-                                  text: comment.trim(),
-                                  userId: currentUser?._id,
-                                  authorName: currentUser?.name,
+    {/* comment list */}
+    <div style={{ maxHeight: 200, overflowY: "auto", display: "flex", flexDirection: "column", gap: 12 }}>
+      {commentList?.length === 0 ? (
+        <div style={{ color: "#9ca3af", fontSize: 13 }}>No comments yet</div>
+      ) : (
+        commentList.map((c, i) => (
+          <div key={i} style={{
+            background: "#f8f9fa", border: "1px solid #e9ecef",
+            borderRadius: 8, padding: "8px 10px",
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <div>
+                <span style={{ fontWeight: 600, fontSize: 13, color: "#374151" }}>
+                  {c.authorName}
+                </span>
+                <span style={{ fontSize: 11, color: "#9ca3af", marginLeft: 8 }}>
+                  {new Date(c.createdAt).toLocaleString("en-IN", {
+                    day: "2-digit", month: "short", year: "numeric",
+                    hour: "2-digit", minute: "2-digit", hour12: true,
+                  })}
+                </span>
+              </div>
+              <button
+                onClick={() => setCommentList((prev) => prev.filter((_, idx) => idx !== i))}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#d1d5db", fontSize: 16 }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "#ef4444"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "#d1d5db"}
+              >✕</button>
+            </div>
 
-                                  createdAt: new Date(),
-                                },
-                              ]);
-
-                              setComment("");
-                            }}
-                            disabled={!comment.trim()}
-                            style={{
-                              backgroundColor: comment.trim()
-                                ? "#6366f1"
-                                : "#e5e7eb",
-                              color: comment.trim() ? "#fff" : "#9ca3af",
-                              border: "none",
-                              borderRadius: "8px",
-                              padding: "10px 12px",
-                              fontSize: "14px",
-                              fontWeight: 600,
-                              cursor: comment.trim()
-                                ? "pointer"
-                                : "not-allowed",
-                              transition: "background-color 0.2s",
-                            }}
-                          >
-                            Post
-                          </button>
-                        ) : (
-                          ""
-                        )}
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        maxHeight: "100px",
-                        overflowY: "auto",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "12px",
-                        paddingRight: "6px",
-                      }}
-                    >
-                      {commentList?.length === 0 ? (
-                        <div style={{ color: "#9ca3af", fontSize: "14px" }}>
-                          No comments yet
-                        </div>
-                      ) : (
-                        commentList?.map((c, i) => (
-                          <div
-                            key={i}
-                            style={{
-                              backgroundColor: "#f8f9fa",
-                              border: "1px solid #e9ecef",
-                              borderRadius: "8px",
-                              padding: "8px 10px",
-                            }}
-                          >
-                            {/* Header */}
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "flex-start",
-                                marginBottom: "4px",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    fontWeight: 600,
-                                    fontSize: "13px",
-                                    color: "#374151",
-                                  }}
-                                >
-                                  {c.authorName}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: "11px",
-                                    color: "#9ca3af",
-                                  }}
-                                >
-                                  {new Date(c.createdAt).toLocaleString(
-                                    "en-IN",
-                                    {
-                                      day: "2-digit",
-                                      month: "short",
-                                      year: "numeric",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      hour12: true,
-                                    }
-                                  )}
-                                </span>
-                              </div>
-
-                              {/* REMOVE BUTTON */}
-                              <button
-                                onClick={() =>
-                                  setCommentList((prev) =>
-                                    prev.filter((_, idx) => idx !== i)
-                                  )
-                                }
-                                style={{
-                                  background: "none",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  color: "#d1d5db",
-                                  fontSize: "16px",
-                                }}
-                                onMouseEnter={(e) =>
-                                  (e.currentTarget.style.color = "#ef4444")
-                                }
-                                onMouseLeave={(e) =>
-                                  (e.currentTarget.style.color = "#d1d5db")
-                                }
-                              >
-                                ✕
-                              </button>
-                            </div>
-
-                            {/* Comment Text */}
-                            <p
-                              style={{
-                                margin: 0,
-                                fontSize: "14px",
-                                color: "#4b5563",
-                                lineHeight: 1.6,
-                              }}
-                            >
-                              {c.text}
-                            </p>
-                          </div>
-                        ))
-                      )}
-                      <div ref={commentEndRef} />
-                    </div>
-                  </div>
-                )}
+            {/* ← use CommentText to highlight @mentions */}
+            <CommentText text={c.text} />
+          </div>
+        ))
+      )}
+      <div ref={commentEndRef} />
+    </div>
+  </div>
+)}
 
                 {activeTab === "History" && (
                   <TaskHistory historyData={historyData} />
@@ -1708,6 +1605,176 @@ useEffect(() => {
         </div>
       )}
     </Fragment>
+  );
+}
+
+function MentionInput({ value, onChange, projectMembers = [], placeholder }) {
+  console.log(projectMembers,"projectMembers");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const textareaRef = useRef(null);
+  const handleChange = (e) => {
+    const val = e.target.value;
+    onChange(val);
+    const cursor = e.target.selectionStart;
+    const textUpToCursor = val.slice(0, cursor);
+    const match = textUpToCursor.match(/@(\w*)$/);
+    if (match) {
+      const query = match[1].toLowerCase();
+      setMentionQuery(query);
+      const filtered = projectMembers.filter((m) =>
+        m.label.toLowerCase().includes(query)
+      );
+      setSuggestions(filtered);
+      setShowSuggestions(filtered.length > 0);
+      setSelectedIndex(0);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+const insertMention = (member) => {
+  const textarea = textareaRef.current;
+  const cursor = textarea.selectionStart;
+  const textUpToCursor = value.slice(0, cursor);
+  const textAfterCursor = value.slice(cursor);
+  const replaced = textUpToCursor.replace(
+    /@(\w*)$/,
+    `@${member.label} `
+  );
+  const newValue = replaced + textAfterCursor;
+
+  onChange(newValue, member);
+  setShowSuggestions(false);
+  setSuggestions([]);
+  setMentionQuery("");
+
+  setTimeout(() => {
+    textarea.focus();
+    const newCursor = replaced.length;
+    textarea.setSelectionRange(newCursor, newCursor);
+  }, 0);
+};
+
+  const handleKeyDown = (e) => {
+    if (!showSuggestions) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((i) => Math.min(i + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      if (suggestions[selectedIndex]) insertMention(suggestions[selectedIndex]);
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+    }
+  };
+
+  return (
+    <div style={{ position: "relative" }}>
+      <textarea
+        ref={textareaRef}
+        rows={2}
+        placeholder={placeholder || "Add a comment... use @ to mention"}
+        value={value}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        style={{
+          width: "100%",
+          resize: "vertical",
+          fontFamily: "inherit",
+          lineHeight: 1.6,
+          paddingBottom: "28px",
+          boxSizing: "border-box",
+          border: "1px solid #e5e7eb",
+          borderRadius: 8,
+          padding: "10px 12px 28px",
+          fontSize: 14,
+          outline: "none",
+        }}
+      />
+
+      {showSuggestions && (
+        <div style={mentionStyles.dropdown}>
+          {suggestions.map((member, i) => (
+            <div
+              key={member.value}
+              onMouseDown={(e) => {
+                e.preventDefault(); // prevent textarea blur
+                insertMention(member);
+              }}
+              style={{
+                ...mentionStyles.item,
+                background: i === selectedIndex ? "#F5F3FF" : "transparent",
+                color: i === selectedIndex ? "#6D28D9" : "#333",
+              }}
+            >
+              {/* avatar */}
+              <div style={{
+                width: 24, height: 24, borderRadius: "50%",
+                background: "#ECEAFD", color: "#7367f0",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 9, fontWeight: 700, flexShrink: 0,
+              }}>
+                {member.label.slice(0, 2).toUpperCase()}
+              </div>
+              <span style={{ fontSize: 13 }}>{member.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const mentionStyles = {
+  dropdown: {
+    position: "absolute",
+    bottom: "110%",
+    left: 0,
+    background: "#fff",
+    border: "1px solid #e5e7eb",
+    borderRadius: 8,
+    boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
+    zIndex: 999,
+    minWidth: 200,
+    maxHeight: 180,
+    overflowY: "auto",
+    padding: "4px 0",
+  },
+  item: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    padding: "7px 12px",
+    cursor: "pointer",
+    transition: "background 0.1s",
+  },
+};
+
+// ─── helper: render comment text with highlighted @mentions ──────────────────
+function CommentText({ text }) {
+  const parts = text.split(/(@\w+(?:\s\w+)?)/g);
+  return (
+    <p style={{ margin: 0, fontSize: 14, color: "#4b5563", lineHeight: 1.6 }}>
+      {parts.map((part, i) =>
+        part.startsWith("@") ? (
+          <span key={i} style={{
+            color: "#7367f0", fontWeight: 600,
+            background: "#ECEAFD", borderRadius: 4,
+            padding: "1px 5px", fontSize: 13,
+          }}>
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </p>
   );
 }
 

@@ -3,11 +3,28 @@ import useApi from "../../auth/service/useApi";
 import { Spinner } from "reactstrap";
 import { Bell, CheckCircle } from "react-feather";
 import moment from "moment";
+import { useDispatch , useSelector } from "react-redux";
+import { redirect } from "react-router-dom";
+import toast from "react-hot-toast";
+import { setnotificationrerender } from "../../Redux/CommonRerender";
 
 export default function Notification() {
   const api = useApi();
+  const dispatch = useDispatch();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const {notificationrerender} = useSelector((state) => state.Commonerender);
+  async function readNotifications(param) {
+    try {
+      let response = await api?.readNotification(param);
+      
+      if (response.status === 200) {
+         dispatch(setnotificationrerender(!notificationrerender));
+      }
+    } catch (error) {
+      toast.error(error?.message || "issue while read");
+    }
+  }
 
   useEffect(() => {
     const getNotificationData = async () => {
@@ -21,7 +38,7 @@ export default function Notification() {
       }
     };
     getNotificationData();
-  }, []);
+  }, [notificationrerender]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -48,6 +65,7 @@ export default function Notification() {
           )}
         </div>
         <button
+          onClick={() => readNotifications("all")}
           style={{
             fontSize: 11,
             color: "#185FA5",
@@ -60,8 +78,6 @@ export default function Notification() {
           Mark all read
         </button>
       </div>
-
-      {/* States */}
       {loading ? (
         <div className="text-center mt-4">
           <Spinner size="sm" />
@@ -83,6 +99,7 @@ export default function Notification() {
       ) : (
         notifications.map((item) => (
           <div
+            onClick={() => readNotifications(item?._id)}
             key={item._id}
             className="d-flex gap-2 align-items-start mb-1"
             style={{
@@ -96,7 +113,11 @@ export default function Notification() {
           >
             <CheckCircle
               size={15}
-              style={{ marginTop: 2, flexShrink: 0, color: item.isRead ? "#aaa" : "#185FA5" }}
+              style={{
+                marginTop: 2,
+                flexShrink: 0,
+                color: item.isRead ? "#aaa" : "#185FA5",
+              }}
             />
 
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -143,7 +164,15 @@ export default function Notification() {
               </p>
             </div>
 
-            <span style={{ fontSize: 11, color: "#aaa", flexShrink: 0, marginTop: 2, whiteSpace: "nowrap" }}>
+            <span
+              style={{
+                fontSize: 11,
+                color: "#aaa",
+                flexShrink: 0,
+                marginTop: 2,
+                whiteSpace: "nowrap",
+              }}
+            >
               {moment(item.createdAt).fromNow()}
             </span>
           </div>

@@ -263,4 +263,13 @@ export default class AuthService {
       withCredentials: true,
     });
   }
+  readNotification(params = {}) {
+    let notificationId = params;
+    console.log(notificationId,"notificationId");
+    
+    return axios.patch(apiConfig.readnotificationEndpoint, {
+      notificationId,
+      withCredentials: true,
+    });
+  }
 }

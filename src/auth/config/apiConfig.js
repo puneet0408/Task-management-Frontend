@@ -20,4 +20,5 @@ export default {
   dashboardempSummaryWidget :"/api/auth/vi/dashboard/summaryemp",
   dashboardadminSummaryWidget :"/api/auth/vi/dashboard/summaryadmin",
   notificationEndpoint:"/api/auth/vi/notification",
+  readnotificationEndpoint:"/api/auth/vi/notification/read",
 };

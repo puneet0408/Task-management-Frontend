@@ -30,7 +30,7 @@ export default function Header() {
       return {};
     }
   }, []);
-
+  const {notificationrerender} = useSelector((state) => state.Commonerender);
   const [showSearch, setShowSearch] = useState(false);
   const [search, setSearch] = useState("");
   const searchRef = useRef(null);
@@ -182,9 +182,8 @@ export default function Header() {
         console.error(error);
       }
     };
-
     getNotificationData();
-  }, []);
+  }, [notificationrerender]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
