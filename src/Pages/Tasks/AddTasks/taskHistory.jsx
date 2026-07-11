@@ -78,7 +78,6 @@ function DiffValue({ c }) {
   );
 }
 
-/* ---------------- Modal ---------------- */
 
 function HistoryModal({ history, onClose }) {
   if (!history) return null;

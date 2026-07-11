@@ -27,6 +27,7 @@ import Notification from "./Pages/NotificationPage/Notification";
 import Profilepage from "./Pages/AdminDasgboard/ProfilePage";
 import ResultPage from "./Pages/ResultPage/Resultpage";
 import NoPageFound from "./Pages/NoPageFount";
+import TaskRecycleBin from "./Pages/TaskRecycleBin";
 export default function App() {
     const dispatch = useDispatch();
 
@@ -73,9 +74,9 @@ export default function App() {
             <Route path="summary" element={<ProjectSummary />} />
             <Route path="notification" element={<Notification />} />
             <Route path="result" element={<ResultPage />} />
+            <Route path="taskrecyclebin" element={<TaskRecycleBin />} />
           </Route>
         </Route>
-
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

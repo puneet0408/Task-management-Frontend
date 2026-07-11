@@ -12,6 +12,7 @@ import TeamStatusChart from "./widgets/taskcountstatuswize";
 import TypeWIzeTaskCountofUsers from "./widgets/TypeWizeCount";
 import EmptyDashboard from "./emptydashboardpage";
 import LoadingScreen from "../loadingpage";
+import TimeTrackingWidget from "./widgets/timeTracking";
 
 function Dashboard() {
   const api = useApi();
@@ -19,7 +20,7 @@ function Dashboard() {
   const { currentUser } = useSelector((state) => state.userListPage);
   const { SprintListItem } = useSelector((state) => state.SprintListPAge);
   const [SprintOption, setSprintOption] = useState([]);
-  const [loadingState , setLoadingState] = useState(false);
+  const [loadingState, setLoadingState] = useState(false);
   const [summaryWidgetData, SummarywidgetData] = useState(null);
   const [isemptydashboard, setisemptydashboard] = useState(false);
   useEffect(() => {
@@ -34,6 +35,31 @@ function Dashboard() {
     setisemptydashboard(isEmptyDashboard);
   }, [summaryWidgetData]);
   const [ActiveSprint, setActiveSprint] = useState(null);
+  const [taskData, setTaskData] = useState(null);
+
+  useEffect(() => {
+    const fetchtask = async () => {
+      try {
+        setLoadingState(true);
+
+        const payload = {};
+        if (ActiveSprint) {
+          payload.sprintId = ActiveSprint.value;
+        }
+        const response = await api.gettask(payload);
+
+        const data = response?.data?.data || [];
+
+        setTaskData(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoadingState(false);
+      }
+    };
+
+    fetchtask();
+  }, [ActiveSprint]);
 
   useEffect(() => {
     const optiondata = SprintListItem.map((sprint) => ({
@@ -67,15 +93,15 @@ function Dashboard() {
     if (!ActiveSprint?.value) return;
     const fetchWidget = async () => {
       try {
-        setLoadingState(true)
+        setLoadingState(true);
         const response = await api.dashboardempSummaryWidget({
           sprintId: ActiveSprint.value,
         });
-         setLoadingState(false)
+        setLoadingState(false);
         SummarywidgetData(response.data.data);
       } catch (err) {
         console.error(err);
-        setLoadingState(false)
+        setLoadingState(false);
       }
     };
     fetchWidget();
@@ -85,44 +111,61 @@ function Dashboard() {
   };
   return (
     <>
-    {loadingState && <LoadingScreen/>}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-        }}
-      >
-        <p></p>
-        {/* <p>Dashboard - {currentUser?.company?.company_name}</p> */}
-        <span>
-          <Select
-            options={SprintOption}
-            value={ActiveSprint}
-            onChange={handleSprintChange}
-            classNamePrefix="react-select"
-            placeholder="Select Sprint"
-          />
-        </span>
-      </div>
-      <hr />
-      {isemptydashboard ? (
-        <EmptyDashboard />
+      {loadingState ? (
+        <LoadingScreen />
       ) : (
         <>
-          <SummaryWidgets summaryWidgetData={summaryWidgetData?.summary[0]} />
-          <div style={styles.widgetsGrid}>
-            <TaskByType data={summaryWidgetData?.typeStats} />
-            <PriorityBreakdown data={summaryWidgetData?.priorityStats} />
-            <BugRateWidget data={summaryWidgetData?.BugRateWidget || []} />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <p></p>
+            {/* <p>Dashboard - {currentUser?.company?.company_name}</p> */}
+            <span>
+              <Select
+                options={SprintOption}
+                value={ActiveSprint}
+                onChange={handleSprintChange}
+                classNamePrefix="react-select"
+                placeholder="Select Sprint"
+              />
+            </span>
           </div>
-          <div style={styles.widgetsGrid}>
-            <TeamWorkloadChart data={summaryWidgetData?.assigneeStats} />
-            <TeamStatusChart data={summaryWidgetData?.assigneeStats} />
-            <TypeWIzeTaskCountofUsers
-              data={summaryWidgetData?.assigneeStats || []}
-            />
-          </div>
+          <hr />
+          {isemptydashboard ? (
+            <EmptyDashboard />
+          ) : (
+            <>
+              <SummaryWidgets
+                summaryWidgetData={summaryWidgetData?.summary[0]}
+              />
+              <div style={styles.widgetsGrid}>
+                <TaskByType data={summaryWidgetData?.typeStats} />
+                <PriorityBreakdown data={summaryWidgetData?.priorityStats} />
+                <BugRateWidget data={summaryWidgetData?.BugRateWidget || []} />
+              </div>
+              <div style={styles.grid}>
+                <TimeTrackingWidget
+                  data={{
+                    originalHrs: summaryWidgetData?.summary[0]?.originalHrs,
+                    completedHrs:summaryWidgetData?.summary[0]?.completedHrs,
+                    remainingHrs:summaryWidgetData?.summary[0]?.remainingHrs,
+                  }}
+                  taskData={taskData}
+                />
+              </div>
+              <div style={styles.widgetsGrid}>
+                <TeamWorkloadChart data={summaryWidgetData?.assigneeStats} />
+                <TeamStatusChart data={summaryWidgetData?.assigneeStats} />
+                <TypeWIzeTaskCountofUsers
+                  data={summaryWidgetData?.assigneeStats || []}
+                />
+              </div>
+            </>
+          )}
         </>
       )}
     </>

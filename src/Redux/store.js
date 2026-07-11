@@ -4,6 +4,7 @@ import UserReducer from "./UserSlice";
 import ProjectReducer from "./projectSlice";
 import SprintReducer from "./SprintSlice";
 import Commonerender from "./CommonRerender";
+import deletedTaskReducer from "./taskRecyclebin";
 
 const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ const store = configureStore({
     userListPage: UserReducer,
     Projectcardpage: ProjectReducer,
     SprintListPAge: SprintReducer,
+    deletedTasklist:deletedTaskReducer,
     Commonerender,
   },
 });

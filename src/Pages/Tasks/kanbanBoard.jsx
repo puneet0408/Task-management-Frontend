@@ -30,6 +30,8 @@ export default function KanbanBoard({
   handleDragEnd,
   handleWorkItemChange,
   userData,
+  rerender,
+  setRerender,
 }) {
   const countTasksInColumn = (story, colId) =>
     story.tasks?.filter((t) => t.taskStatus === colId).length ?? 0;
@@ -321,7 +323,9 @@ export default function KanbanBoard({
                       .slice(0, 2)
                       .toUpperCase()}
                   </div>
-                  <span style={{ fontSize: 12, color: "#000" , fontWeight: 600, }}>
+                  <span
+                    style={{ fontSize: 12, color: "#000", fontWeight: 600 }}
+                  >
                     {story?.user?.name}
                   </span>
                 </div>
@@ -339,6 +343,8 @@ export default function KanbanBoard({
             </div>
             {columns.map((col, i) => (
               <Column
+                rerender={rerender}
+                setRerender={setRerender}
                 userData={userData}
                 storyId={story.storyId}
                 handleWorkItemChange={handleWorkItemChange}

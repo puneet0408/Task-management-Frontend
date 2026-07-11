@@ -437,6 +437,8 @@ function TaskPage() {
         />
       </div>
       <KanbanBoard
+        rerender={rerender}
+        setRerender={setRerender}
         userData={userData}
         stories={stories}
         columns={columns}

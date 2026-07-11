@@ -2,78 +2,61 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toSlug } from "../../../Utils/srugs";
+import { S } from "./dashboardStyles";
+
+const PRIORITY_META = {
+  1: { label: "High",   color: "#E24B4A", bg: "#FCEBEB" },
+  2: { label: "Medium", color: "#EF9F27", bg: "#FAEEDA" },
+  3: { label: "Low",    color: "#7367f0", bg: "#ECEAFD" },
+};
 
 function PriorityBreakdown({ data = [] }) {
-  // Priority mapping
-  const priorityMap = {
-    1: {
-      label: "High",
-      color: "#ef4444",
-    },
-    2: {
-      label: "Medium",
-      color: "#f59e0b",
-    },
-    3: {
-      label: "Low",
-      color: "#3b82f6",
-    },
-  };
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const { companySlug } = useParams();
-  const { currentUser } = useSelector((state) => state.userListPage);
-  const projectName = currentUser?.preferences?.activeProject?.projectName;
-  const projectSlug = toSlug(projectName);
+  const { currentUser } = useSelector((s) => s.userListPage);
+  const projectSlug = toSlug(currentUser?.preferences?.activeProject?.projectName);
 
-    const handleitemClick = (item) => {
-      console.log(item,"item");
-      let ProrityTab;
-      if(item.priority == 1){
-        ProrityTab = "high"
-      } else if (item.priority == 2){
-        ProrityTab = "medium"
-      }else {
-        ProrityTab:"low"
-      }
-    navigate(
-      `/${companySlug}/${projectSlug}/result?filter=${item?.priority}&tab=${ProrityTab}&key=${"priority"}`,
-    );
-  };
-
-  // Total count
   const total = data.reduce((sum, item) => sum + item.count, 0);
 
+  const handleClick = (item) => {
+    const tabMap = { 1: "high", 2: "medium", 3: "low" };
+    navigate(`/${companySlug}/${projectSlug}/result?filter=${item.priority}&tab=${tabMap[item.priority]}&key=priority`);
+  };
+
   return (
-    <div style={styles.card}>
-      <h3 style={styles.title}>Priority breakdown</h3>
+    <div style={S.card}>
+      <div style={S.header}>
+        <div>
+          <p style={S.title}>Priority breakdown</p>
+          <p style={S.sub}>Tasks per priority level</p>
+        </div>
+        <div style={S.legend}>
+          {Object.entries(PRIORITY_META).map(([key, meta]) => (
+            <span key={key} style={S.legendItem}>
+              <span style={{ ...S.legendDot, background: meta.color }} />
+              {meta.label}
+            </span>
+          ))}
+        </div>
+      </div>
 
-      <div style={{ marginTop: 16 }}>
-        {data.map((item, index) => {
-          const priority = priorityMap[item.priority];
-
-          // percentage width
-          const width = `${(item.count / total) * 100}%`;
-
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {data.map((item) => {
+          const meta = PRIORITY_META[item.priority] || {};
+          const width = total > 0 ? `${(item.count / total) * 100}%` : "0%";
           return (
-            <div key={index} style={styles.row}>
-              {/* Label */}
-              <div style={styles.label}>
-                {priority?.label || "Unknown"}
+            <div key={item.priority} style={S.row} onClick={() => handleClick(item)}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, width: 80 }}>
+                <span style={{ ...S.priorityDot, background: meta.bg, color: meta.color }}>
+                  {meta.label || "Unknown"}
+                </span>
               </div>
-
-              {/* Progress Bar */}
-              <div  onClick={() => handleitemClick(item)} style={styles.progressWrapper}>
-                <div
-                  style={{
-                    ...styles.progress,
-                    width,
-                    background: priority?.color,
-                  }}
-                />
+              <div style={S.track}>
+                <div style={{ ...S.fill, width, background: meta.color }} />
               </div>
-
-              {/* Count */}
-              <div  style={styles.count}>{item.count}</div>
+              <span style={{ fontSize: 13, fontWeight: 500, color: "#111", width: 24, textAlign: "right" }}>
+                {item.count}
+              </span>
             </div>
           );
         })}
@@ -83,53 +66,3 @@ function PriorityBreakdown({ data = [] }) {
 }
 
 export default PriorityBreakdown;
-
-const styles = {
-card: {
-  background: "#f5f5f5",
-  borderRadius: 12,
-  padding: 18,
-  minHeight: 340,
-  width: "100%",
-  boxSizing: "border-box",
-},
-
-title: {
-  margin: 0,
-  fontSize: 18,
-  fontWeight: 600,
-  color: "#222",
-},
-
-  row: {
-    display: "grid",
-    gridTemplateColumns: "70px 1fr 24px",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 14,
-  },
-
-  label: {
-    fontSize: 14,
-    color: "#555",
-  },
-
-  progressWrapper: {
-    height: 6,
-    background: "#e5e5e5",
-    borderRadius: 999,
-    overflow: "hidden",
-    cursor:"pointer",
-  },
-
-  progress: {
-    height: "100%",
-    borderRadius: 999,
-  },
-
-  count: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "right",
-  },
-};

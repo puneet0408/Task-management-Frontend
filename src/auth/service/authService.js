@@ -178,6 +178,13 @@ export default class AuthService {
       withCredentials: true,
     });
   }
+    getdeletedtask(params = {}, signal) {
+    return axios.get(apiConfig.getdeletedTaskEndpoint, {
+      params,
+      withCredentials: true,
+      signal,
+    });
+  }
   gettagsApi(params = {}) {
     return axios.get(apiConfig.curdTagEndpoint, {
       params,

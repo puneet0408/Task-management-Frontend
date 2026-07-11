@@ -21,4 +21,5 @@ export default {
   dashboardadminSummaryWidget :"/api/auth/vi/dashboard/summaryadmin",
   notificationEndpoint:"/api/auth/vi/notification",
   readnotificationEndpoint:"/api/auth/vi/notification/read",
+  getdeletedTaskEndpoint :"/api/auth/v1/task/deletedtask",
 };

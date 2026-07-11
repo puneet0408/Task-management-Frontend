@@ -2,15 +2,23 @@ import React from "react";
 import { useDroppable } from "@dnd-kit/core";
 import TaskCard from "./TaskCard";
 
-export default function Column({ column, tasks, isLast, handleWorkItemChange, storyId , userData }) {
-
+export default function Column({
+  column,
+  tasks,
+  isLast,
+  handleWorkItemChange,
+  storyId,
+  userData,
+  rerender,
+  setRerender,
+}) {
   const columnId = column.taskStage || column.bugStage;
 
   const { setNodeRef, isOver } = useDroppable({
     id: `${storyId}__${columnId}`,
     data: {
       columnId,
-      storyId, 
+      storyId,
     },
   });
 
@@ -31,7 +39,14 @@ export default function Column({ column, tasks, isLast, handleWorkItemChange, st
       }}
     >
       {tasks.map((task) => (
-        <TaskCard key={task._id} userData={userData} task={task} handleWorkItemChange={handleWorkItemChange} />
+        <TaskCard
+          key={task._id}
+          userData={userData}
+          task={task}
+          handleWorkItemChange={handleWorkItemChange}
+          rerender={rerender}
+          setRerender={setRerender}
+        />
       ))}
     </div>
   );
