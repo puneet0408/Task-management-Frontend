@@ -43,7 +43,7 @@ const menuConfig = [
   },
     {
     id: "recycle Bin",
-    title: "Task Recycle Bin",
+    title: "Recycle Bin",
     path: "taskrecyclebin",
     scope: "project",
     roles: ["admin", "manager"],

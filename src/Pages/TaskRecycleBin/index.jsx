@@ -209,7 +209,7 @@ function RecycleBin() {
           title={"Task Recycle Bin"}
           items={[
             { label: "Dashboard", path: `/${company}/${project}/dashboard` },
-            { label: "Task Recycle Bin", path: "/sprint" },
+            { label: "Task Recycle Bin", path: `/${company}/${project}/taskrecyclebin` },
             { label: "List" },
           ]}
         />
