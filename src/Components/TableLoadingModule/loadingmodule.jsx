@@ -1,6 +1,6 @@
 import React from "react";
 import { TbChecks } from "react-icons/tb";
-import "./loadingmodule.scss";
+import "./loadingModule.scss";
 
 const LoadingModule = () => {
   return (

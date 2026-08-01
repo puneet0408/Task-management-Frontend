@@ -22,7 +22,7 @@ import AdminDashboard from "./Pages/AdminDasgboard/AdminDashboard";
 import SuperAdminDashboard from "./Pages/SuperAdminDashboard/SuperAdminDashboard";
 import ProjectSummary from "./Pages/SummaryPage/ProjectSummary";
 import Permission from "./Pages/Permission/Permission";
-import Task from "./Pages/Tasks/task";
+import Task from "./Pages/Tasks/Task";
 import Notification from "./Pages/NotificationPage/Notification";
 import Profilepage from "./Pages/AdminDasgboard/ProfilePage";
 import ResultPage from "./Pages/ResultPage/Resultpage";
